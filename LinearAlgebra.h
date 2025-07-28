@@ -11,6 +11,7 @@ typedef struct {
     int vectorDimension;
 } Vector;
 
+
 // CreateVector FUNCTION
 // DEFINE VECTOR ARRAY WITH POSITIVE DIMENSION AT SPECIFIED POINTER
 //
@@ -43,6 +44,27 @@ Vector* CreateVector2(int vectorSize){
         return NULL;
 
     return v;
+}
+
+// CompareVectors FUNCTION
+// COMPARES DIMENSIONS AND INDIVIDUAL ELEMENTS OF 2 SPECIFIED VECTORS
+// RETURNS 0 IF VECTORS ARE NOT IDENTICAL, RETURNS 1 OTHERWISE
+//
+// Vector* newVector = CreateVector2((int) vectorDimension);
+//
+int CompareVectors(Vector* a, Vector* b){
+    if(a->vectorDimension != b->vectorDimension){
+        fprintf(stderr, "Improper vector dimensions.\n");
+        return 0;
+    }
+
+    for(int i = 0; i < a->vectorDimension; i++){
+        if(a->vectorArray[i] != b->vectorArray[i]){
+            return 0;
+        }
+    }
+
+    return 1;
 }
 
 // VectorToString FUNCTION
@@ -126,6 +148,7 @@ Vector* DuplicateVector2(Vector* original){
 // MATHEMATICAL SUMMATION OF VECTORS a AND b WRITTEN OVER VECTOR a
 // DOES NOT PRESERVE ORIGINAL VECTOR a
 //
+// (Effectively: a += b)
 // if(!SumVectors((Vector *) a, (Vector *) b))
 //   errorHandler(); 
 //
@@ -140,6 +163,25 @@ int SumVectors(Vector* a, Vector* b){
     }
 
     return 1;
+}
+
+// SumVectors2 FUNCTION 
+// RETURNS MATHEMATICAL SUMMATION OF VECTORS a AND b AS NEW VECTOR
+// RETURNS NULL IF DIMENSIONS <= 0
+//
+// Vector* c = SumVectors2((Vector *) a, (Vector *) b); 
+//
+Vector* SumVectors2(Vector* a, Vector* b){
+    if(a->vectorDimension != b->vectorDimension || a->vectorDimension <= 0){
+        fprintf(stderr, "Improper vector dimensions.\n");
+        return NULL;
+    }
+
+    Vector* v = DuplicateVector2(a);
+    if(!SumVectors(v, b))
+        return NULL;
+    
+    return v;
 }
 
 // SubtractVectors FUNCTION 
@@ -162,6 +204,25 @@ int SubtractVectors(Vector* a, Vector* b){
     return 1;
 }
 
+// SubtractVectors2 FUNCTION 
+// RETURNS MATHEMATICAL SUBTRACTION OF VECTORS a AND b AS NEW VECTOR
+// RETURNS NULL IF DIMENSIONS <= 0
+//
+// Vector* c = SubtractVectors2((Vector *) a, (Vector *) b); 
+//
+Vector* SubtractVectors2(Vector* a, Vector* b){
+    if(a->vectorDimension != b->vectorDimension || a->vectorDimension <= 0){
+        fprintf(stderr, "Improper vector dimensions.\n");
+        return NULL;
+    }
+
+    Vector* v = DuplicateVector2(a);
+    if(!SubtractVectors(v, b))
+        return NULL;
+    
+    return v;
+}
+
 // MultiplyVector FUNCTION 
 // MATHEMATICAL MULTIPLICATION OF VECTOR v AND SCALAR COEFFICIENT c WRITTEN OVER VECTOR a
 // DOES NOT PRESERVE ORIGINAL VECTOR v
@@ -171,7 +232,7 @@ int SubtractVectors(Vector* a, Vector* b){
 //
 int MultiplyVector(Vector* a, const double coefficient){
     if(a->vectorDimension <= 0){
-        fprintf(stderr, "Improper vector dimensions.\n");
+        fprintf(stderr, "Improper vector dimension.\n");
         return 0;
     }
 
@@ -180,6 +241,25 @@ int MultiplyVector(Vector* a, const double coefficient){
     }
 
     return 1;
+}
+
+// MultiplyVector2 FUNCTION 
+// OUTPUTS MATHEMATICAL MULTIPLICATION OF VECTOR v AND SCALAR COEFFICIENT c
+// PRESERVES ORIGINAL VECTOR v
+// 
+// Vector* product = MultiplyVector2((Vector *) v, (double) c);
+//
+Vector* MultiplyVector2(Vector* a, const double coefficient){
+    if(a->vectorDimension <= 0){
+        fprintf(stderr, "Improper vector dimension.\n");
+        return NULL;
+    }
+
+    Vector* v = DuplicateVector2(a);
+    if(!MultiplyVector(v, coefficient))
+        return NULL;
+    
+    return v;
 }
 
 // CrossProduct FUNCTION
@@ -207,6 +287,43 @@ int CrossProduct(Vector** newVector, Vector* a, Vector* b){
     buffer->vectorArray[2] = a->vectorArray[0]*b->vectorArray[1] - a->vectorArray[1]*b->vectorArray[0];
 
     return 1;
+}
+
+// DotProduct FUNCTION
+// CALCULATE DOT PRODUCT OF 2 VECTORS TO SPECIFIED POINTER.
+//
+// double dotProduct;
+// if(!DotProduct(&dotProduct, (Vector *) a, (Vector *) b))
+//   errorHandler(); 
+//
+int DotProduct(double* res, Vector* a, Vector* b){
+    if(a->vectorDimension != b->vectorDimension || a->vectorDimension <= 0){
+        fprintf(stderr, "Improper vector dimensions.\n");
+        return 0;
+    }
+
+    double buffer = 0;
+    for(int i = 0; i < a->vectorDimension; i++){
+        buffer += a->vectorArray[i]*b->vectorArray[i];
+    }
+    *res = buffer;
+
+    return 1;
+}
+
+// DotProduct2 FUNCTION
+// RETURN DOT PRODUCT OF 2 VECTORS AS DOUBLE
+//
+// double dotProduct = DotProduct2((Vector *) a, (Vector *) b);
+// if(isnan(dotProduct))
+//   errorHandler();
+//
+double DotProduct2(Vector* a, Vector* b){
+    double dotProduct;
+    if(!DotProduct(&dotProduct, a, b))
+        return NAN;
+    
+    return dotProduct;
 }
 
 // VectorLength FUNCTION

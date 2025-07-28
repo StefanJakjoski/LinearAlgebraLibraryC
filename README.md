@@ -18,6 +18,13 @@ LIST OF FUNCTIONS:
 // Vector* newVector = CreateVector2((int) vectorDimension);
 //
 
+// CompareVectors FUNCTION
+// COMPARES DIMENSIONS AND INDIVIDUAL ELEMENTS OF 2 SPECIFIED VECTORS
+// RETURNS 0 IF VECTORS ARE NOT IDENTICAL, RETURNS 1 OTHERWISE
+//
+// Vector* newVector = CreateVector2((int) vectorDimension);
+//
+
 // VectorToString FUNCTION
 // PRINT CONTENTS OF VECTOR a TO STANDARD OUTPUT
 //
@@ -57,12 +64,26 @@ LIST OF FUNCTIONS:
 //   errorHandler(); 
 //
 
+// SumVectors2 FUNCTION 
+// RETURNS MATHEMATICAL SUMMATION OF VECTORS a AND b AS NEW VECTOR
+// RETURNS NULL IF DIMENSIONS <= 0
+//
+// Vector* c = SumVectors2((Vector *) a, (Vector *) b); 
+//
+
 // SubtractVectors FUNCTION 
 // MATHEMATICAL SUBTRACTION OF VECTORS a AND b WRITTEN OVER VECTOR a
 // DOES NOT PRESERVE ORIGINAL VECTOR a
 //
 // if(!SubtractVectors((Vector *) a, (Vector *) b))
 //   errorHandler(); 
+//
+
+// SubtractVectors2 FUNCTION 
+// RETURNS MATHEMATICAL SUBTRACTION OF VECTORS a AND b AS NEW VECTOR
+// RETURNS NULL IF DIMENSIONS <= 0
+//
+// Vector* c = SubtractVectors2((Vector *) a, (Vector *) b); 
 //
 
 // MultiplyVector FUNCTION 
@@ -73,12 +94,35 @@ LIST OF FUNCTIONS:
 //   errorHandler(); 
 //
 
+// MultiplyVector2 FUNCTION 
+// OUTPUTS MATHEMATICAL MULTIPLICATION OF VECTOR v AND SCALAR COEFFICIENT c
+// PRESERVES ORIGINAL VECTOR v
+// 
+// Vector* product = MultiplyVector2((Vector *) v, (double) c);
+//
+
 // CrossProduct FUNCTION
 // CALCULATE CROSS PRODUCT OF 2 VECTORS AND SAVE TO POINTER
 //
 // Vector* crossProductVector;
 // if(!CrossProduct(&crossProductVector, (Vector *) a, (Vector *) b))
 //   errorHandler(); 
+//
+
+// DotProduct FUNCTION
+// CALCULATE DOT PRODUCT OF 2 VECTORS TO SPECIFIED POINTER.
+//
+// double dotProduct;
+// if(!DotProduct(&dotProduct, (Vector *) a, (Vector *) b))
+//   errorHandler(); 
+//
+
+// DotProduct2 FUNCTION
+// RETURN DOT PRODUCT OF 2 VECTORS AS DOUBLE
+//
+// double dotProduct = DotProduct2((Vector *) a, (Vector *) b);
+// if(isnan(dotProduct))
+//   errorHandler();
 //
 
 // VectorLength FUNCTION
