@@ -154,6 +154,94 @@ bool DotProductTest(){
     return dot == 39.5;
 }
 
+bool CreateMatrixTest(){
+    Matrix* m;
+    CreateMatrix(&m, 2, 2);
+
+    if(m->matrixRows != 2 || m->matrixColumns != 2)
+        return false;
+    
+    return !m->matrixArray[0][0] && !m->matrixArray[0][1] && !m->matrixArray[1][0] && !m->matrixArray[1][1];
+}
+
+bool CompareMatricesTest(){
+    Matrix* a = CreateMatrix2(2, 1);
+    Matrix* b = CreateMatrix2(2, 1);
+    Matrix* c = CreateMatrix2(2, 1);
+
+    a->matrixArray[0][0] = 1; a->matrixArray[1][0] = 2;
+    b->matrixArray[0][0] = 1; b->matrixArray[1][0] = 2;
+    c->matrixArray[0][0] = 1; c->matrixArray[1][0] = 23.4;
+
+    return CompareMatrices(a, b) && !CompareMatrices(a, c);
+}
+
+bool ArrayToMatrixTest(){
+    Matrix* c = CreateMatrix2(2, 2);
+    c->matrixArray[0][0] = 1; c->matrixArray[0][1] = 23.4;
+    c->matrixArray[1][0] = -321; c->matrixArray[1][1] = 323.4;
+
+    double** array = (double **) calloc(2, sizeof(double *));
+    array[0] = (double *) calloc(2, sizeof(double));
+    array[1] = (double *) calloc(2, sizeof(double));
+    array[0][0] = 1; array[0][1] = 23.4;
+    array[1][0] = -321; array[1][1] = 323.4;
+    Matrix* comp;
+    ArrayToMatrix(&comp, array, 2, 2);
+
+    return CompareMatrices(comp, c);
+}
+
+bool SumMatricesTest(){
+    Matrix* a = CreateMatrix2(2, 1);
+    Matrix* b = CreateMatrix2(2, 1);
+    Matrix* c = CreateMatrix2(2, 1);
+    
+    a->matrixArray[0][0] = 1; a->matrixArray[1][0] = 2;
+    b->matrixArray[0][0] = 1; b->matrixArray[1][0] = 2;
+    c->matrixArray[0][0] = 2; c->matrixArray[1][0] = 4;
+    
+    Matrix* ab;
+    SumMatrices(&ab, a, b);
+
+    return CompareMatrices(c, ab);
+}
+
+bool MultiplyMatricesTest(){
+    Matrix* a = CreateMatrix2(2, 3);
+    Matrix* b = CreateMatrix2(3, 2);
+    Matrix* c = CreateMatrix2(2, 2);
+    
+    a->matrixArray[0][0] = 1; a->matrixArray[0][1] = 2; a->matrixArray[0][2] = 3;
+    a->matrixArray[1][0] = 4; a->matrixArray[1][1] = 5; a->matrixArray[1][2] = 6;
+
+    b->matrixArray[0][0] = 3; b->matrixArray[0][1] = 4;
+    b->matrixArray[1][0] = 5; b->matrixArray[1][1] = 6;
+    b->matrixArray[2][0] = 1; b->matrixArray[2][1] = 2;
+
+    c->matrixArray[0][0] = 16; c->matrixArray[0][1] = 22;
+    c->matrixArray[1][0] = 43; c->matrixArray[1][1] = 58;
+
+    printf("");
+    return CompareMatrices(c, MultiplyMatrices2(a,b));
+}
+
+bool MatrixScalarMultiplicationTest(){
+    Matrix* b = CreateMatrix2(3, 2);
+    Matrix* c = CreateMatrix2(3, 2);
+
+    b->matrixArray[0][0] = 3; b->matrixArray[0][1] = 4;
+    b->matrixArray[1][0] = 5; b->matrixArray[1][1] = 6;
+    b->matrixArray[2][0] = 1; b->matrixArray[2][1] = 2;
+    
+    c->matrixArray[0][0] = 9; c->matrixArray[0][1] = 12;
+    c->matrixArray[1][0] = 15; c->matrixArray[1][1] = 18;
+    c->matrixArray[2][0] = 3; c->matrixArray[2][1] = 6;
+
+    return CompareMatrices(c, MatrixScalarMultiplication2(b, 3.0));
+}
+
+
 
 int main(){
     //Enable colored text
@@ -168,7 +256,7 @@ int main(){
     SetConsoleMode(hConsole, dwMode);
     //END Enable colored text
 
-    printf("Testing...\n");
+    printf("Testing Vectors...\n");
     printf("CreateVector() "); Eval(CreateVectorTest());
     printf("CompareVectors() "); Eval(CompareVectorsTest());
     printf("ArrayToVector() "); Eval(ArrayToVectorTest());
@@ -180,4 +268,12 @@ int main(){
     printf("VectorLength() "); Eval(VectorLengthTest());
     printf("UnitVector() "); Eval(UnitVectorTest());
     printf("DotProduct() "); Eval(DotProductTest());
+
+    printf("\nTesting Matrices...\n");
+    printf("CreateMatrix() "); Eval(CreateMatrixTest());
+    printf("CompareMatrices() "); Eval(CompareMatricesTest());
+    printf("ArrayToMatrix() "); Eval(ArrayToMatrixTest());
+    printf("SumMatrices() "); Eval(SumMatricesTest());
+    printf("MultiplyMatrices() "); Eval(MultiplyMatricesTest());
+    printf("MatrixScalarMultiplication() "); Eval(MatrixScalarMultiplicationTest());
 }

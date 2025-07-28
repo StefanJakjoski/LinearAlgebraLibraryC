@@ -148,3 +148,84 @@ LIST OF FUNCTIONS:
 //
 // Vector* unitVector = unitVector2((Vector *) v);
 //
+
+// CreateMatrix FUNCTION
+// DEFINE MATRIX WITH POSITIVE DIMENSIONS AT SPECIFIED POINTER
+//
+// Matrix* newMatrix;
+// if(!CreateMatrix(&newMatrix, (int) rowDimension, (int) columnDimension))
+//   errorHandler(); 
+//
+
+// CreateMatrix2 FUNCTION
+// RETURNS MATRIX POINTER WITH SPECIFIED DIMENSIONS
+// RETURNS NULL IF EITHER DIMENSION <= 0
+//
+// Matrix* m = CreateMatrix((int) rowDimension, (int) colDimension);
+//
+
+// CompareMatrices FUNCTION
+// COMPARES 2 SPECIFIED MATRICES
+// RETURNS 1 IF IDENTICAL, 0 OTHERWISE
+//
+// if(!CompareMatrices((Matrix *) a, (Matrix *) b))
+//   ErrorHandler();
+//
+
+// MatrixToString FUNCTION
+// PRINT CONTENTS OF MATRIX TO STANDARD OUTPUT 
+//
+// if(!MatrixToString((Matrix *) m))
+//   ErrorHandler();
+//
+
+// ArrayToMatrix FUNCTION
+// DEFINE MATRIX WITH POSITIVE DIMENSIONS AT SPECIFIED POINTER
+// FROM 2D ARRAY OF TYPE DOUBLE
+//
+// Matrix* newMatrix;
+// if(!ArrayToMatrix(&newMatrix, (double **) array, (int) arrayRows, (int) arrayColumns))
+//   errorHandler(); 
+//
+
+// SumMatrices FUNCTION
+// CALCULATES SUM OF 2 MATRICES TO A SPECIFIED POINTER
+//
+// Matrix* sum;
+// if(!SumMatrices(&sum, (Matrix *) a, (Matrix *) b))
+//   ErrorHandler();
+//
+
+// SumMatrices2 FUNCTION
+// RETURNS SUM OF 2 MATRICES
+//
+// Matrix* sum = SumMatrices((Matrix *) a, (Matrix *) b);
+//
+
+// MultiplyMatrices FUNCTION
+// TRADITIONAL FUNCTION MULTIPLICATION FOR 2 MATRICES
+//
+// Matrix* product;
+// if(!MultiplyMatrices(&product, (Matrix *) a, (Matrix *) b))
+//   ErrorHandler();
+//
+
+// MultiplyMatrices2 FUNCTION
+// RETURNS PRODUCT OF TRADITIONAL MULTIPLICATION FOR 2 MATRICES
+//
+// Matrix* product = MultiplyMatrices2((Matrix *) a, (Matrix *) b);
+//
+
+// MatrixScalarMultiplication FUNCTION
+// CALCULATES SCALAR MATRIX MULTIPLICATION SAVED TO SPECIFIED MATRIX
+//
+// Matrix* scalarProduct;
+// if(!MatrixScalarMultiplication(&scalarProduct, (Matrix *) a, (double) scalar))
+//   ErrorHandler();
+//
+
+// MatrixScalarMultiplication2 FUNCTION
+// RETURNS SCALAR MATRIX MULTIPLICATION
+//
+// Matrix* scalarProduct = MatrixScalarMultiplication2((Matrix *) a, (double) scalar);
+//

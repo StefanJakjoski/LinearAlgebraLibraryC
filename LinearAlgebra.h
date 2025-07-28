@@ -11,6 +11,11 @@ typedef struct {
     int vectorDimension;
 } Vector;
 
+typedef struct {
+    double** matrixArray;
+    int matrixRows;
+    int matrixColumns;
+} Matrix;
 
 // CreateVector FUNCTION
 // DEFINE VECTOR ARRAY WITH POSITIVE DIMENSION AT SPECIFIED POINTER
@@ -50,7 +55,8 @@ Vector* CreateVector2(int vectorSize){
 // COMPARES DIMENSIONS AND INDIVIDUAL ELEMENTS OF 2 SPECIFIED VECTORS
 // RETURNS 0 IF VECTORS ARE NOT IDENTICAL, RETURNS 1 OTHERWISE
 //
-// Vector* newVector = CreateVector2((int) vectorDimension);
+// if(!CompareVectors((Vector *) a, (Vector *) b))
+//   ErrorHandler();
 //
 int CompareVectors(Vector* a, Vector* b){
     if(a->vectorDimension != b->vectorDimension){
@@ -381,6 +387,239 @@ Vector* UnitVector2(Vector* original){
         return NULL;
 
     return v;
+}
+
+
+//
+// START OF MATRIX FUNCTIONS
+//
+
+
+// CreateMatrix FUNCTION
+// DEFINE MATRIX WITH POSITIVE DIMENSIONS AT SPECIFIED POINTER
+//
+// Matrix* newMatrix;
+// if(!CreateMatrix(&newMatrix, (int) rowDimension, (int) columnDimension))
+//   errorHandler(); 
+//
+int CreateMatrix(Matrix** res, int rows, int columns){
+    if(rows <= 0 || columns <= 0){
+        fprintf(stderr, "Improper matrix dimensions.\n");
+        return 0;
+    }
+
+    Matrix* buffer = (Matrix *) calloc(1, sizeof(Matrix));
+    buffer->matrixRows = rows; buffer->matrixColumns = columns;
+
+    double** array = (double **) calloc(rows, sizeof(double *));
+    for(int i = 0; i < rows; i++){
+        array[i] = (double *) calloc(columns, sizeof(double));
+    }
+
+    buffer->matrixArray = array;
+    *res = buffer;
+
+    return 1;
+}
+
+// CreateMatrix2 FUNCTION
+// RETURNS MATRIX POINTER WITH SPECIFIED DIMENSIONS
+// RETURNS NULL IF EITHER DIMENSION <= 0
+//
+// Matrix* m = CreateMatrix((int) rowDimension, (int) colDimension);
+//
+Matrix* CreateMatrix2(int rows, int columns){
+    Matrix* m;
+    if(!CreateMatrix(&m, rows, columns))
+        return NULL;
+
+    return m;
+}
+
+// CompareMatrices FUNCTION
+// COMPARES 2 SPECIFIED MATRICES
+// RETURNS 1 IF IDENTICAL, 0 OTHERWISE
+//
+// if(!CompareMatrices((Matrix *) a, (Matrix *) b))
+//   ErrorHandler();
+//
+int CompareMatrices(Matrix* a, Matrix* b){
+    if(a->matrixRows != b->matrixRows || a->matrixColumns != b->matrixColumns){
+        fprintf(stderr, "Improper matrix dimensions.\n");
+        return 0;
+    }
+
+    for(int i = 0; i < a->matrixRows; i++){
+        for(int j = 0; j < a->matrixColumns; j++){
+            if(a->matrixArray[i][j] != b->matrixArray[i][j])
+                return 0;
+        }
+    }
+
+    return 1;
+}
+
+// MatrixToString FUNCTION
+// PRINT CONTENTS OF MATRIX TO STANDARD OUTPUT 
+//
+// if(!MatrixToString((Matrix *) m))
+//   ErrorHandler();
+//
+int MatrixToString(Matrix* m){
+    if(m->matrixRows <= 0 || m->matrixColumns <= 0){
+        fprintf(stderr, "Improper matrix dimensions.\n");
+        return 0;
+    }
+
+    int digitsToDisplay = 10;
+    int decimalPlaces = 3;
+    for(int i = 0; i < m->matrixRows; i++){
+        printf("| ");
+        for(int j = 0; j < m->matrixColumns; j++){
+            if(j != 0)
+                printf(", ");
+            
+            printf("%*.*G", digitsToDisplay, decimalPlaces, m->matrixArray[i][j]);
+        }
+        printf(" |\n");
+    }
+
+    return 1;
+}
+
+// ArrayToMatrix FUNCTION
+// DEFINE MATRIX WITH POSITIVE DIMENSIONS AT SPECIFIED POINTER
+// FROM 2D ARRAY OF TYPE DOUBLE
+//
+// Matrix* newMatrix;
+// if(!ArrayToMatrix(&newMatrix, (double **) array, (int) arrayRows, (int) arrayColumns))
+//   errorHandler(); 
+//
+int ArrayToMatrix(Matrix** res, double** array, int arrayRows, int arrayColumns){
+    Matrix* buffer;
+    if(!CreateMatrix(&buffer, arrayRows, arrayColumns)){
+        fprintf(stderr, "Error during new matrix creation.\n");
+        return 0;
+    }
+
+    memcpy(buffer->matrixArray, array, arrayColumns*arrayRows*sizeof(double));
+    *res = buffer;
+
+    return 1;
+}
+
+// SumMatrices FUNCTION
+// CALCULATES SUM OF 2 MATRICES TO A SPECIFIED POINTER
+//
+// Matrix* sum;
+// if(!SumMatrices(&sum, (Matrix *) a, (Matrix *) b))
+//   ErrorHandler();
+//
+int SumMatrices(Matrix** res, Matrix* a, Matrix* b){
+    if(a->matrixRows != b->matrixRows || a->matrixColumns != b->matrixColumns || a->matrixRows <= 0 || a->matrixColumns <= 0){
+        fprintf(stderr, "Improper matrix dimensions.\n");
+        return 0;
+    }
+
+    Matrix* buffer = CreateMatrix2(a->matrixRows, a->matrixColumns);
+    for(int i = 0; i < a->matrixRows; i++){
+        for(int j = 0; j < a->matrixColumns; j++){
+            buffer->matrixArray[i][j] = a->matrixArray[i][j] + b->matrixArray[i][j];
+        }
+    }
+    *res = buffer;
+
+    return 1;
+}
+
+// SumMatrices2 FUNCTION
+// RETURNS SUM OF 2 MATRICES
+//
+// Matrix* sum = SumMatrices((Matrix *) a, (Matrix *) b);
+//
+Matrix* SumMatrices2(Matrix* a, Matrix* b){
+    Matrix* sum;
+    if(!SumMatrices(&sum, a, b))
+        return NULL;
+    
+    return sum;
+}
+
+// MultiplyMatrices FUNCTION
+// TRADITIONAL FUNCTION MULTIPLICATION FOR 2 MATRICES
+//
+// Matrix* product;
+// if(!MultiplyMatrices(&product, (Matrix *) a, (Matrix *) b))
+//   ErrorHandler();
+//
+int MultiplyMatrices(Matrix** res, Matrix* a, Matrix* b){
+    if(a->matrixColumns != b->matrixRows || a->matrixRows <= 0 || a->matrixColumns <= 0 || b->matrixColumns <= 0){
+        fprintf(stderr, "Improper matrix dimensions.\n");
+        return 0;
+    }
+
+    Matrix* buffer = CreateMatrix2(a->matrixRows, b->matrixColumns);
+    for (int i = 0; i < a->matrixRows; i++) {
+        for (int j = 0; j < b->matrixColumns; j++) {
+            buffer->matrixArray[i][j] = 0;
+            for (int k = 0; k < a->matrixColumns; k++) {
+                buffer->matrixArray[i][j] += a->matrixArray[i][k] * b->matrixArray[k][j];
+            }
+        }
+    }
+    *res = buffer;
+
+    return 1;
+}
+
+// MultiplyMatrices2 FUNCTION
+// RETURNS PRODUCT OF TRADITIONAL MULTIPLICATION FOR 2 MATRICES
+//
+// Matrix* product = MultiplyMatrices2((Matrix *) a, (Matrix *) b);
+//
+Matrix* MultiplyMatrices2(Matrix* a, Matrix* b){
+    Matrix* res;
+    if(!MultiplyMatrices(&res, a, b))
+        return NULL;
+    
+    return res;
+}
+
+// MatrixScalarMultiplication FUNCTION
+// CALCULATES SCALAR MATRIX MULTIPLICATION SAVED TO SPECIFIED MATRIX
+//
+// Matrix* scalarProduct;
+// if(!MatrixScalarMultiplication(&scalarProduct, (Matrix *) a, (double) scalar))
+//   ErrorHandler();
+//
+int MatrixScalarMultiplication(Matrix** res, Matrix* a, const double scalar){
+    if(a->matrixColumns <= 0 || a->matrixRows <= 0){
+        fprintf(stderr, "Improper matrix dimensions.\n");
+        return 0;
+    }
+
+    Matrix* buffer = CreateMatrix2(a->matrixRows, a->matrixColumns);
+    for (int i = 0; i < a->matrixRows; i++){
+        for (int j = 0; j < a->matrixColumns; j++){
+            buffer->matrixArray[i][j] = a->matrixArray[i][j]*scalar;
+        }
+    }
+    *res = buffer;
+
+    return 1;
+}
+
+// MatrixScalarMultiplication2 FUNCTION
+// RETURNS SCALAR MATRIX MULTIPLICATION
+//
+// Matrix* scalarProduct = MatrixScalarMultiplication2((Matrix *) a, (double) scalar);
+//
+Matrix* MatrixScalarMultiplication2(Matrix* a, const double scalar){
+    Matrix* res;
+    if(!MatrixScalarMultiplication(&res, a, scalar))
+        return NULL;
+
+    return res;
 }
 
 #endif // LINEAR_ALGEBRA_H
