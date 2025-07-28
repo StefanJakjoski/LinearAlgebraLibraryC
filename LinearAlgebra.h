@@ -82,9 +82,8 @@ int ArrayToVector(Vector** res, double* array, int arrayDimension){
     }
 
     Vector* buffer = *res;
-    for(int i = 0; i < arrayDimension; i++){
-        buffer->vectorArray[i] = array[i];
-    }
+    memcpy(buffer->vectorArray, array, arrayDimension*sizeof(double));
+    buffer->vectorDimension = arrayDimension;
 
     return 1;
 }
