@@ -214,8 +214,8 @@ int CrossProduct(Vector** newVector, Vector* a, Vector* b){
 // CALCULATE LENGTH (OR NORM) OF SPECIFIED VECTOR AND RETURN VALUE.
 // RETURNS -1 IF VECTOR DIMENSION <= 0
 //
-// Vector* crossProductVector;
-// if(VectorLength((Vector *) v) < 0)
+// double norm;
+// if(norm = VectorLength((Vector *) v) < 0)
 //   errorHandler(); 
 //
 double VectorLength(Vector* v){
@@ -230,6 +230,41 @@ double VectorLength(Vector* v){
     }
 
     return sqrt(res);
+}
+
+// UnitVector FUNCTION
+// CALCULATE UNIT VECTOR FROM SPECIFIED VECTOR AND OVERWRITE ORIGINAL
+//
+// Vector* v;
+// if(!UnitVector((Vector *) v))
+//   errorHandler(); 
+//
+int UnitVector(Vector* original){
+    double norm = VectorLength(original);
+    if(norm < 0)
+        return 0;
+    
+    if(!MultiplyVector(original, 1.0/norm))
+        return 0;
+
+    return 1;
+}
+
+// UnitVector2 FUNCTION
+// CALCULATE UNIT VECTOR FROM SPECIFIED VECTOR RETURN VECTOR OUTPUT
+// RETURNS NULL IF DIMENSION <= 0
+//
+// Vector* unitVector = unitVector2((Vector *) v);
+//
+Vector* UnitVector2(Vector* original){
+    Vector* v;
+    if(!DuplicateVector(&v, original))
+        return NULL;
+
+    if(!UnitVector(v))
+        return NULL;
+
+    return v;
 }
 
 #endif // LINEAR_ALGEBRA_H
