@@ -7,6 +7,8 @@
 
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
+#define ZERO_APPROX 1e-15
+
 // CreateVector FUNCTION
 // DEFINE VECTOR ARRAY WITH POSITIVE DIMENSION AT SPECIFIED POINTER
 //
@@ -20,7 +22,7 @@ int CreateVector(Vector** res, int vectorSize){
         return 0;
     }
 
-    Vector* buffer = (Vector *) calloc(1, sizeof(Vector));
+    Vector* buffer = (Vector *) malloc(sizeof(Vector));
     buffer->vectorDimension = vectorSize;
     buffer->vectorArray = (double *) calloc(vectorSize, sizeof(double));
     *res = buffer;
@@ -39,6 +41,16 @@ Vector* CreateVector2(int vectorSize){
         return NULL;
 
     return v;
+}
+
+// FreeVector FUNCTION
+// FREES ALL POINTERS ASSOCIATED WITH SPECIFIED VECTOR
+//
+// FreeVector((Vector *) v);
+//
+void FreeVector(Vector* v){
+    free(v->vectorArray);
+    free(v);
 }
 
 // CompareVectors FUNCTION
@@ -398,10 +410,10 @@ int CreateMatrix(Matrix** res, int rows, int columns){
         return 0;
     }
 
-    Matrix* buffer = (Matrix *) calloc(1, sizeof(Matrix));
+    Matrix* buffer = (Matrix *) malloc(sizeof(Matrix));
     buffer->matrixRows = rows; buffer->matrixColumns = columns;
 
-    double** array = (double **) calloc(rows, sizeof(double *));
+    double** array = (double **) malloc(rows*sizeof(double *));
     for(int i = 0; i < rows; i++){
         array[i] = (double *) calloc(columns, sizeof(double));
     }
@@ -427,6 +439,8 @@ Matrix* CreateMatrix2(int rows, int columns){
 }
 
 void FreeMatrix(Matrix* m){
+    for(int i = 0; i < m->matrixRows; i++)
+        free(m->matrixArray[i]);
     free(m->matrixArray);
     free(m);
 }
@@ -468,6 +482,13 @@ Matrix* CreateIdentityMatrix2(int dimensions){
     return res;
 }
 
+double absDouble(double a){
+    if(a >= 0)
+        return a;
+    
+    return -a;
+}
+
 // CompareMatrices FUNCTION
 // COMPARES 2 SPECIFIED MATRICES
 // RETURNS 1 IF IDENTICAL, 0 OTHERWISE
@@ -483,8 +504,9 @@ int CompareMatrices(Matrix* a, Matrix* b){
 
     for(int i = 0; i < a->matrixRows; i++){
         for(int j = 0; j < a->matrixColumns; j++){
-            if(a->matrixArray[i][j] != b->matrixArray[i][j])
+            if(absDouble(a->matrixArray[i][j] - b->matrixArray[i][j]) > ZERO_APPROX){
                 return 0;
+            }
         }
     }
 
@@ -614,6 +636,7 @@ int SumMatrices(Matrix** res, Matrix* a, Matrix* b){
     Matrix* buffer;
     if(!CreateMatrix(&buffer, a->matrixRows, a->matrixColumns))
         return 0;
+    
     
     for(int i = 0; i < a->matrixRows; i++){
         for(int j = 0; j < a->matrixColumns; j++){
@@ -956,4 +979,67 @@ Vector* MultiplyMatrixVector2(Matrix* m, Vector* v){
         return NULL;
     
     return res;
+}
+
+// MoorePenroseInverse FUNCTION
+// CALCULATES MOORE PENROSE INVERSE OF MATRIX
+// 
+// Matrix* MPInverse;
+// if(!MoorePenroseInverse(&MPInverse, (Matrix *) m))
+//   ErrorHandler();
+//
+int MoorePenroseInverse(Matrix** res, Matrix* m){
+    if(m->matrixColumns <= 0 || m->matrixRows <= 0){
+        fprintf(stderr, "MoorePenroseInverse: Improper matrix dimensions.\n");
+        return 0;
+    }
+
+    Matrix* mT;
+    if(!TransposeMatrix(&mT, m))
+        return 0;
+    
+    
+    if(m->matrixRows > m->matrixColumns){
+        Matrix* mmT, *mmTInv, *mp;
+        if(!MultiplyMatrices(&mmT, m, mT)){
+            fprintf(stderr, "MP Inverse Error: Multiplying matrices.\n");
+            return 0;
+        }
+        
+        if(!InvertSquareMatrix(&mmTInv, mmT)){
+            fprintf(stderr, "MP Inverse Error: Inverting matrix.\n");
+            return 0;
+        }
+
+        if(!MultiplyMatrices(&mp, mT, mmTInv)){
+            fprintf(stderr, "MP Inverse Error: Multiplying matrices.\n");
+            return 0;
+        }
+        
+        *res = mp;
+        FreeMatrix(mT); FreeMatrix(mmT); FreeMatrix(mmTInv);
+
+        return 1;
+    }
+
+    Matrix* mTm, *mTmInv, *mp2;
+    if(!MultiplyMatrices(&mTm, mT, m)){
+        fprintf(stderr, "MP Inverse Error: Multiplying matrices.\n");
+        return 0;
+    }
+    
+    if(!InvertSquareMatrix(&mTmInv, mTm)){
+        fprintf(stderr, "MP Inverse Error: Inverting matrix.\n");
+        return 0;
+    }
+
+    if(!MultiplyMatrices(&mp2, mTmInv, mT)){
+        fprintf(stderr, "MP Inverse Error: Multiplying matrices.\n");
+        return 0;
+    }
+
+    *res = mp2;
+    FreeMatrix(mT); FreeMatrix(mTm); FreeMatrix(mTmInv);
+
+    return 1;    
 }

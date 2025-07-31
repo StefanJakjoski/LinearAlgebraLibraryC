@@ -21,7 +21,10 @@ bool CreateVectorTest(){
     if(v->vectorDimension != 2)
         return false;
     
-    return !v->vectorArray[0] && !v->vectorArray[1];
+    bool check = !v->vectorArray[0] && !v->vectorArray[1];
+    FreeVector(v);
+
+    return check;
 }
 
 bool CompareVectorsTest(){
@@ -31,7 +34,10 @@ bool CompareVectorsTest(){
     Vector* d;
     CreateVector(&d, 2);
     
-    return CompareVectors(v, d);
+    bool check = CompareVectors(v, d);
+    FreeVector(v); FreeVector(d);
+
+    return check;
 }
 
 bool ArrayToVectorTest(){
@@ -44,7 +50,10 @@ bool ArrayToVectorTest(){
     CreateVector(&d, 2);
     d->vectorArray[0] = 1; d->vectorArray[1] = 2;
 
-    return CompareVectors(v, d);
+    bool check = CompareVectors(v, d);
+    FreeVector(v); FreeVector(d);
+
+    return check;
 }
 
 bool DuplicateVectorTest(){
@@ -55,7 +64,10 @@ bool DuplicateVectorTest(){
     Vector* v;
     DuplicateVector(&v, d);
     
-    return CompareVectors(v, d);
+    bool check = CompareVectors(v, d);
+    FreeVector(v); FreeVector(d);
+
+    return check;
 }
 
 bool SumVectorsTest(){
@@ -71,7 +83,10 @@ bool SumVectorsTest(){
     CreateVector(&vd, 2);
     vd->vectorArray[0] = 4; vd->vectorArray[1] = 5;
 
-    return CompareVectors(vd, SumVectors2(v, d));
+    bool check = CompareVectors(vd, SumVectors2(v, d));
+    FreeVector(d); FreeVector(v); FreeVector(vd);
+
+    return check;
 }
 
 bool SubtractVectorsTest(){
@@ -87,7 +102,10 @@ bool SubtractVectorsTest(){
     CreateVector(&vd, 2);
     vd->vectorArray[0] = 2; vd->vectorArray[1] = 1;
 
-    return CompareVectors(vd, SubtractVectors2(v, d));
+    bool check = CompareVectors(vd, SubtractVectors2(v, d));
+    FreeVector(d); FreeVector(v); FreeVector(vd);
+
+    return check;
 }
 
 bool MultiplyVectorTest(){
@@ -99,7 +117,10 @@ bool MultiplyVectorTest(){
     CreateVector(&vc, 2);
     vc->vectorArray[0] = 2; vc->vectorArray[1] = 4;
 
-    return CompareVectors(vc, MultiplyVector2(d, 2));
+    bool check = CompareVectors(vc, MultiplyVector2(d, 2));
+    FreeVector(d); FreeVector(vc);
+
+    return check;
 }
 
 bool CrossProductTest(){
@@ -118,7 +139,10 @@ bool CrossProductTest(){
     CreateVector(&comp, 3);
     comp->vectorArray[0] = 31; comp->vectorArray[1] = 10; comp->vectorArray[2] = -0.5;
 
-    return CompareVectors(comp, c);
+    bool check = CompareVectors(comp, c);
+    FreeVector(a); FreeVector(b); FreeVector(c); FreeVector(comp);
+
+    return check;
 }
 
 bool VectorLengthTest(){
@@ -126,7 +150,10 @@ bool VectorLengthTest(){
     CreateVector(&comp, 3);
     comp->vectorArray[0] = 31; comp->vectorArray[1] = 10; comp->vectorArray[2] = -0.5;
 
-    return VectorLength(comp) == sqrt(31*31 + 100 + 0.25);
+    bool check = VectorLength(comp) == sqrt(31*31 + 100 + 0.25);
+    FreeVector(comp);
+
+    return check;
 }
 
 bool UnitVectorTest(){
@@ -134,7 +161,10 @@ bool UnitVectorTest(){
     CreateVector(&comp, 3);
     comp->vectorArray[0] = 31; comp->vectorArray[1] = 10; comp->vectorArray[2] = -0.5;
 
-    return VectorLength(UnitVector2(comp)) == 1.0;
+    bool check = VectorLength(UnitVector2(comp)) == 1.0;
+    FreeVector(comp);
+
+    return check;
 }
 
 bool DotProductTest(){
@@ -150,18 +180,20 @@ bool DotProductTest(){
     double dot;
     if(!DotProduct(&dot, a, b))
         return false;
+    
+    FreeVector(a); FreeVector(b);
 
     return dot == 39.5;
 }
 
 bool CreateMatrixTest(){
-    Matrix* m;
+    Matrix* m = NULL;
     CreateMatrix(&m, 2, 2);
 
     if(m->matrixRows != 2 || m->matrixColumns != 2)
         return false;
     
-    Matrix* i;
+    Matrix* i = NULL;
     if(!CreateIdentityMatrix(&i, 2))
         return false;
     
@@ -173,23 +205,25 @@ bool CreateMatrixTest(){
 }
 
 bool CompareMatricesTest(){
-    Matrix* a = CreateMatrix2(2, 1);
-    Matrix* b = CreateMatrix2(2, 1);
-    Matrix* c = CreateMatrix2(2, 1);
+    Matrix* a = NULL; Matrix* b = NULL; Matrix* c = NULL;
+    if(!CreateMatrix(&a, 2, 1) || !CreateMatrix(&b, 2, 1) || !CreateMatrix(&c, 2, 1))
+        return false;
 
-    a->matrixArray[0][0] = 1; a->matrixArray[1][0] = 2;
-    b->matrixArray[0][0] = 1; b->matrixArray[1][0] = 2;
-    c->matrixArray[0][0] = 1; c->matrixArray[1][0] = 23.4;
+    a->matrixArray[0][0] = 1.0; a->matrixArray[1][0] = 2.0;
+    b->matrixArray[0][0] = 1.0; b->matrixArray[1][0] = 2.0;
+    c->matrixArray[0][0] = 1.0; c->matrixArray[1][0] = 23.4;
 
-    bool check = CompareMatrices(a, b) && !CompareMatrices(a, c);
+    bool check = CompareMatrices(a, b);
+    bool check2 = !CompareMatrices(a, c);
     FreeMatrix(a); FreeMatrix(b); FreeMatrix(c);
 
-    return check;
+    return check && check2;
 }
 
 bool TransposeMatrixTest(){
-    Matrix* a = CreateMatrix2(2, 3);
-    Matrix* b = CreateMatrix2(3, 2);
+    Matrix* a = NULL; Matrix* b = NULL;
+    if(!CreateMatrix(&a, 2, 3) || !CreateMatrix(&b, 3, 2))
+        return false;
     
     a->matrixArray[0][0] = 1; a->matrixArray[0][1] = 2; a->matrixArray[0][2] = 3;
     a->matrixArray[1][0] = 4; a->matrixArray[1][1] = 5; a->matrixArray[1][2] = 6;
@@ -198,14 +232,21 @@ bool TransposeMatrixTest(){
     b->matrixArray[1][0] = 2; b->matrixArray[1][1] = 5;
     b->matrixArray[2][0] = 3; b->matrixArray[2][1] = 6;
 
-    bool check = CompareMatrices(b, TransposeMatrix2(a));
-    FreeMatrix(a); FreeMatrix(b);
+    Matrix* aT = NULL;
+    if(!TransposeMatrix(&aT, a))
+        return false;
+
+    bool check = CompareMatrices(b, aT);
+    FreeMatrix(a); FreeMatrix(b); FreeMatrix(aT);
 
     return check;
 }
 
 bool ArrayToMatrixTest(){
-    Matrix* c = CreateMatrix2(2, 2);
+    Matrix* c = NULL;
+    if(!CreateMatrix(&c, 2, 2))
+        return false;
+    
     c->matrixArray[0][0] = 1; c->matrixArray[0][1] = 23.4;
     c->matrixArray[1][0] = -321; c->matrixArray[1][1] = 323.4;
 
@@ -214,7 +255,7 @@ bool ArrayToMatrixTest(){
     array[1] = (double *) calloc(2, sizeof(double));
     array[0][0] = 1; array[0][1] = 23.4;
     array[1][0] = -321; array[1][1] = 323.4;
-    Matrix* comp;
+    Matrix* comp = NULL;
     ArrayToMatrix(&comp, array, 2, 2);
 
     bool check = CompareMatrices(comp, c);
@@ -224,7 +265,10 @@ bool ArrayToMatrixTest(){
 }
 
 bool DuplicateMatrixTest(){
-    Matrix* c = CreateMatrix2(2, 2);
+    Matrix* c = NULL;
+    if(!CreateMatrix(&c, 2, 2))
+        return false;
+    
     c->matrixArray[0][0] = 1; c->matrixArray[0][1] = 23.4;
     c->matrixArray[1][0] = -321; c->matrixArray[1][1] = 323.4;
 
@@ -237,16 +281,17 @@ bool DuplicateMatrixTest(){
 }
 
 bool SumMatricesTest(){
-    Matrix* a = CreateMatrix2(2, 1);
-    Matrix* b = CreateMatrix2(2, 1);
-    Matrix* c = CreateMatrix2(2, 1);
+    Matrix* a = NULL; Matrix* b = NULL; Matrix* c = NULL;
+    if(!CreateMatrix(&a, 2, 1) || !CreateMatrix(&b, 2, 1) || !CreateMatrix(&c, 2, 1))
+        return false;
     
-    a->matrixArray[0][0] = 1; a->matrixArray[1][0] = 2;
-    b->matrixArray[0][0] = 1; b->matrixArray[1][0] = 2;
-    c->matrixArray[0][0] = 2; c->matrixArray[1][0] = 4;
+    a->matrixArray[0][0] = 1.0; a->matrixArray[1][0] = 2.0;
+    b->matrixArray[0][0] = 1.0; b->matrixArray[1][0] = 2.0;
+    c->matrixArray[0][0] = 2.0; c->matrixArray[1][0] = 4.0;
     
-    Matrix* ab;
-    SumMatrices(&ab, a, b);
+    Matrix* ab = NULL;
+    if(!SumMatrices(&ab, a, b))
+        return false;
 
     bool check = CompareMatrices(c, ab);
     FreeMatrix(a); FreeMatrix(b); FreeMatrix(c); FreeMatrix(ab);
@@ -255,29 +300,33 @@ bool SumMatricesTest(){
 }
 
 bool MultiplyMatricesTest(){
-    Matrix* a = CreateMatrix2(2, 3);
-    Matrix* b = CreateMatrix2(3, 2);
-    Matrix* c = CreateMatrix2(2, 2);
-    
-    a->matrixArray[0][0] = 1; a->matrixArray[0][1] = 2; a->matrixArray[0][2] = 3;
-    a->matrixArray[1][0] = 4; a->matrixArray[1][1] = 5; a->matrixArray[1][2] = 6;
+    Matrix* a = NULL; Matrix* b = NULL; Matrix* c = NULL;
+    if(!CreateMatrix(&a, 2, 3) || !CreateMatrix(&b, 3, 2) || !CreateMatrix(&c, 2, 2))
+        return false;
 
-    b->matrixArray[0][0] = 3; b->matrixArray[0][1] = 4;
-    b->matrixArray[1][0] = 5; b->matrixArray[1][1] = 6;
-    b->matrixArray[2][0] = 1; b->matrixArray[2][1] = 2;
+    a->matrixArray[0][0] = 1.0; a->matrixArray[0][1] = 2.0; a->matrixArray[0][2] = 3.0;
+    a->matrixArray[1][0] = 4.0; a->matrixArray[1][1] = 5.0; a->matrixArray[1][2] = 6.0;
 
-    c->matrixArray[0][0] = 16; c->matrixArray[0][1] = 22;
-    c->matrixArray[1][0] = 43; c->matrixArray[1][1] = 58;
+    b->matrixArray[0][0] = 3.0; b->matrixArray[0][1] = 4.0;
+    b->matrixArray[1][0] = 5.0; b->matrixArray[1][1] = 6.0;
+    b->matrixArray[2][0] = 1.0; b->matrixArray[2][1] = 2.0;
 
-    bool check = CompareMatrices(c, MultiplyMatrices2(a,b));
-    FreeMatrix(a); FreeMatrix(b); FreeMatrix(c);
+    c->matrixArray[0][0] = 16.0; c->matrixArray[0][1] = 22.0;
+    c->matrixArray[1][0] = 43.0; c->matrixArray[1][1] = 58.0;
+
+    Matrix* ab = NULL;
+    if(!MultiplyMatrices(&ab, a, b))
+        return false;
+    bool check = CompareMatrices(c, ab);
+    FreeMatrix(a); FreeMatrix(b); FreeMatrix(c); FreeMatrix(ab);
 
     return check;
 }
 
 bool MatrixScalarMultiplicationTest(){
-    Matrix* b = CreateMatrix2(3, 2);
-    Matrix* c = CreateMatrix2(3, 2);
+    Matrix* b = NULL; Matrix* c = NULL;
+    if(!CreateMatrix(&b, 3, 2) || !CreateMatrix(&c, 3, 2))
+        return false;
 
     b->matrixArray[0][0] = 3; b->matrixArray[0][1] = 4;
     b->matrixArray[1][0] = 5; b->matrixArray[1][1] = 6;
@@ -287,15 +336,20 @@ bool MatrixScalarMultiplicationTest(){
     c->matrixArray[1][0] = 15; c->matrixArray[1][1] = 18;
     c->matrixArray[2][0] = 3; c->matrixArray[2][1] = 6;
 
-    bool check = CompareMatrices(c, MatrixScalarMultiplication2(b, 3.0));
-    FreeMatrix(b); FreeMatrix(c);
+    Matrix* b2 = NULL;
+    if(!MatrixScalarMultiplication(&b2, b, 3.0))
+        return false;
+    
+    bool check = CompareMatrices(c, b2);
+    FreeMatrix(b); FreeMatrix(c); FreeMatrix(b2);
 
     return check;
 }
 
 bool SwapMatrixRowsTest(){
-    Matrix* b = CreateMatrix2(3, 2);
-    Matrix* c = CreateMatrix2(3, 2);
+    Matrix* b = NULL; Matrix* c = NULL;
+    if(!CreateMatrix(&b, 3, 2) || !CreateMatrix(&c, 3, 2))
+        return false;
 
     b->matrixArray[0][0] = 3; b->matrixArray[0][1] = 4;
     b->matrixArray[1][0] = 5; b->matrixArray[1][1] = 6;
@@ -315,8 +369,9 @@ bool SwapMatrixRowsTest(){
 }
 
 bool RowManipulationTest(){
-    Matrix* b = CreateMatrix2(2, 2);
-    Matrix* c = CreateMatrix2(2, 2);
+    Matrix* b = NULL; Matrix* c = NULL;
+    if(!CreateMatrix(&b, 2, 2) || !CreateMatrix(&c, 2, 2))
+        return false;
 
     for(int i = 0; i < 2; i++){
         for(int j = 0; j < 2; j++){
@@ -332,8 +387,13 @@ bool RowManipulationTest(){
 }
 
 bool DeterminantRecursiveTest(){
-    Matrix* m = CreateIdentityMatrix2(4);
-    Matrix* m2 = MatrixScalarMultiplication2(m, 3.0);
+    Matrix* m = NULL;
+    if(!CreateIdentityMatrix(&m, 4))
+        return false;
+    
+    Matrix* m2 = NULL;
+    if(!MatrixScalarMultiplication(&m2, m, 3.0))
+        return false;
 
     bool check = DeterminantRecursive(m) == 1 && DeterminantRecursive(m2) == 81;
     FreeMatrix(m); FreeMatrix(m2);
@@ -342,11 +402,13 @@ bool DeterminantRecursiveTest(){
 }
 
 bool InvertSquareMatrixTest(){
-    Matrix* c = CreateMatrix2(2, 2);
-    c->matrixArray[0][0] = 4.0; c->matrixArray[0][1] = 0;
+    Matrix* c = NULL;
+    if(!CreateMatrix(&c, 2, 2))
+        return false;
+    c->matrixArray[0][0] = 4.0; c->matrixArray[0][1] = 0.0;
     c->matrixArray[1][0] = -3.0; c->matrixArray[1][1] = 323.4;
 
-    Matrix* inv;
+    Matrix* inv = NULL;
     if(!InvertSquareMatrix(&inv, c)){
         return false;
     }
@@ -379,6 +441,23 @@ bool MultiplyMatrixVectorTest(){
     return check;
 }
 
+bool MPInverseTest(){
+    Matrix* c = CreateMatrix2(2, 2);
+    c->matrixArray[0][0] = 4.5; c->matrixArray[0][1] = 0;
+    c->matrixArray[1][0] = -3.0; c->matrixArray[1][1] = 323.4;
+
+    Matrix* mp, *inv;
+    if(!MoorePenroseInverse(&mp, c))
+        return false;
+    if(!InvertSquareMatrix(&inv, c))
+        return false;
+    
+    bool check = CompareMatrices(mp, inv);
+    FreeMatrix(c); FreeMatrix(mp); FreeMatrix(inv);
+
+    return check;
+}
+
 
 int main(){
     //Enable colored text
@@ -405,19 +484,20 @@ int main(){
     printf("VectorLength() "); Eval(VectorLengthTest());
     printf("UnitVector() "); Eval(UnitVectorTest());
     printf("DotProduct() "); Eval(DotProductTest());
-
+    
     printf("\nTesting Matrices...\n");
     printf("CreateMatrix() "); Eval(CreateMatrixTest());
     printf("CompareMatrices() "); Eval(CompareMatricesTest());
     printf("TransposeMatrix() "); Eval(TransposeMatrixTest());
     printf("ArrayToMatrix() "); Eval(ArrayToMatrixTest());
     printf("DuplicateMatrix() "); Eval(DuplicateMatrixTest());
-    printf("SumMatrices() "); Eval(SumMatricesTest());
     printf("MultiplyMatrices() "); Eval(MultiplyMatricesTest());
+    printf("SumMatrices() "); Eval(SumMatricesTest());
     printf("MatrixScalarMultiplication() "); Eval(MatrixScalarMultiplicationTest());
     printf("SwapMatrixRows() "); Eval(SwapMatrixRowsTest());
     printf("Add/MultiplyRow() "); Eval(RowManipulationTest());
     printf("DeterminantRecursive() "); Eval(DeterminantRecursiveTest());
     printf("InvertSquareMatrix() "); Eval(InvertSquareMatrixTest());
     printf("MultiplyMatrixVector() "); Eval(MultiplyMatrixVectorTest());
+    printf("MoorePenroseInverse() "); Eval(MPInverseTest());
 }

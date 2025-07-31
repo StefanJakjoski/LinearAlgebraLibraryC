@@ -34,6 +34,13 @@ int CreateVector(Vector** res, int vectorSize);
 //
 Vector* CreateVector2(int vectorSize);
 
+// FreeVector FUNCTION
+// FREES ALL POINTERS ASSOCIATED WITH SPECIFIED VECTOR
+//
+// FreeVector((Vector *) v);
+//
+void FreeVector(Vector* v);
+
 // CompareVectors FUNCTION
 // COMPARES DIMENSIONS AND INDIVIDUAL ELEMENTS OF 2 SPECIFIED VECTORS
 // RETURNS 0 IF VECTORS ARE NOT IDENTICAL, RETURNS 1 OTHERWISE
@@ -404,5 +411,14 @@ int MultiplyMatrixVector(Vector** res, Matrix* m, Vector* v);
 // Vector* product = MultiplyMatrixVector2((Matrix *) m, (Vector *) v);
 //
 Vector* MultiplyMatrixVector2(Matrix* m, Vector* v);
+
+// MoorePenroseInverse FUNCTION
+// CALCULATES MOORE PENROSE INVERSE OF MATRIX
+// 
+// Matrix* MPInverse;
+// if(!MoorePenroseInverse(&MPInverse, (Matrix *) m))
+//   ErrorHandler();
+//
+int MoorePenroseInverse(Matrix** res, Matrix* m);
 
 #endif // LINEAR_ALGEBRA_H
