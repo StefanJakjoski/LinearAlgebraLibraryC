@@ -207,6 +207,11 @@ int CreateMatrix(Matrix** res, int rows, int columns);
 //
 Matrix* CreateMatrix2(int rows, int columns);
 
+// FreeMatrix FUNCTION
+// FREES POINTERS ASSOCIATED WITH MATRIX
+//
+// FreeMatrix((Matrix *) m);
+//
 void FreeMatrix(Matrix* m);
 
 // CreateIdentityMatrix FUNCTION
