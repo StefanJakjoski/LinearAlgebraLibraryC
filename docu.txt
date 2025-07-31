@@ -161,6 +161,27 @@ LIST OF FUNCTIONS:
 // Matrix* m = CreateMatrix((int) rowDimension, (int) colDimension);
 //
 
+// FreeMatrix FUNCTION
+// FREES POINTERS ASSOCIATED WITH MATRIX
+//
+// FreeMatrix((Matrix *) m);
+//
+
+// CreateIdentityMatrix FUNCTION
+// DEFINE IDENTITY MATRIX AT SPECIFIED POINTER
+//
+// Matrix* identity;
+// if(!CreateIdentityMatrix(&identity, (int) dimensions))
+//   ErrorHandler();
+//
+
+// CreateIdentityMatrix2 FUNCTION
+// RETURN IDENTITY MATRIX FROM SPECIFIED DIMENSIONS
+// RETURNS NULL IF DIMENSIONS ARE IMPROPER
+//
+// Matrix* identity = CreateIdentityMatrix2((int) dimensions);
+//
+
 // CompareMatrices FUNCTION
 // COMPARES 2 SPECIFIED MATRICES
 // RETURNS 1 IF IDENTICAL, 0 OTHERWISE
@@ -247,4 +268,62 @@ LIST OF FUNCTIONS:
 //
 // if(!SwapMatrixRows((Matrix *) m, (int) row1, (int) row2))
 //   ErrorHandler();
+//
+
+// MultiplyRow MATRIX
+// MULTIPLY ROW OF MATRIX BY SCALAR VALUE
+//
+// if(!MultiplyRow((Matrix *) a, (int) row, (int) scalar))
+//   ErrorHandler();
+//
+
+// AddRow FUNCTION
+// ADD THE CONTENTS OF ONE MATRIX ROW ONTO ANOTHER
+// (Effectively: matrix[row1] += matrix[row2])
+//
+// if(!AddRow((Matrix *) a, (int) rowBase, (int) rowSecondary))
+//   ErrorHandler();
+//
+
+// DeterminantRecursive FUNCTION 
+// RECURSIVELY CALCULATES DETERMINANT OF GIVEN MATRIX 
+// RETURNS DOUBLE AND PRINTS ERROR IF IMPROPER DIMENSIONS
+//
+// double determinant = DeterminantRecursive((Matrix *) m);
+// 
+
+// FindNonZeroInColumn() FUNCTION
+// FINDS FIRST NON ZERO ENTRY IN SPECIFIED MATRIX COLUMN (TOP TO BOTTOM)
+// STARTS SEARCH AT SPECIFIED STARTING ROW
+// RETURNS -1 IF ERROR OR ALL ENTRIES ARE 0
+//
+
+// InvertSquareMarix FUNCTION
+// INVERTS SQUARE MATRIX AND ASSIGNS RESULT TO SPECIFIED POINTER
+// 
+// Matrix* inverse;
+// if(!InvertSquareMatrix(&inv, (Matrix *) m))
+//   ErrorHandler();
+//
+
+// InvertSquareMatrix2 FUNCTION
+// RETURNS INVERTED MATRIX FROM SPECIFIED MATRIX
+// RETURNS NULL IF ERROR
+// 
+// Matrix* inverse = InvertSquareMatrix2((Matrix *) m);
+//
+
+// MultiplyMatrixVector() FUNCTION
+// CALCULATE MATRIX*VECTOR MULTIPLICATION TO SPECIFIED VECTOR POINTER
+//
+// Vector* product;
+// if(!MultiplyMatrixVector(&product, (Matrix *) m, (Vector *) v))
+//   ErrorHandler();
+//
+
+// MultiplyMatrixVector2() FUNCTION
+// RETURN VECTOR POINTER FOR MATRIX*VECTOR PRODUCT
+// RETURNS NULL IF ERROR OR MISALIGNED DIMENSIONS
+//
+// Vector* product = MultiplyMatrixVector2((Matrix *) m, (Vector *) v);
 //
