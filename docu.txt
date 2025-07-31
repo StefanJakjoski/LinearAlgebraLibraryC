@@ -169,6 +169,21 @@ LIST OF FUNCTIONS:
 //   ErrorHandler();
 //
 
+// TransposeMatrix FUNCTION
+// CALCULATE TRANSPOSE OF MATRIX AND SAVE TO SPECIFIED POINTER
+//
+// Matrix* m;
+// if(!TransposeMatrix(&m, (Matrix *) a))
+//   ErrorHandler();
+// 
+
+// TransposeMatrix2 FUNCTION
+// RETURN TRANSPOSE OF MATRIX
+// RETURNS NULL IF EITHER DIMENSION <= 0
+//
+// Matrix* m = TransposeMatrix2((Matrix *) a);
+//
+
 // MatrixToString FUNCTION
 // PRINT CONTENTS OF MATRIX TO STANDARD OUTPUT 
 //
@@ -225,4 +240,11 @@ LIST OF FUNCTIONS:
 // RETURNS SCALAR MATRIX MULTIPLICATION
 //
 // Matrix* scalarProduct = MatrixScalarMultiplication2((Matrix *) a, (double) scalar);
+//
+
+// SwapMatrixRows FUNCTION
+// SWAPS SPECIFIED ROWS IN GIVEN MATRIX
+//
+// if(!SwapMatrixRows((Matrix *) m, (int) row1, (int) row2))
+//   ErrorHandler();
 //

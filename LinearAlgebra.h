@@ -6,6 +6,8 @@
 #include <string.h>
 #include <math.h>
 
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+
 typedef struct {
     double* vectorArray;
     int vectorDimension;
@@ -436,6 +438,48 @@ Matrix* CreateMatrix2(int rows, int columns){
     return m;
 }
 
+void FreeMatrix(Matrix* m){
+    free(m->matrixArray);
+    free(m);
+}
+
+// CreateIdentityMatrix FUNCTION
+// DEFINE IDENTITY MATRIX AT SPECIFIED POINTER
+//
+// Matrix* identity;
+// if(!CreateIdentityMatrix(&identity, (int) dimensions))
+//   ErrorHandler();
+//
+int CreateIdentityMatrix(Matrix** res, int dimensions){
+    if(dimensions <= 0){
+        fprintf(stderr, "Improper matrix dimensions.\n");
+        return 0;
+    }
+
+    Matrix* buffer;
+    CreateMatrix(&buffer, dimensions, dimensions);
+    for(int i = 0; i < dimensions; i++){
+        buffer->matrixArray[i][i] = 1;
+    }
+    *res = buffer;
+
+    return 1;
+}
+
+// CreateIdentityMatrix2 FUNCTION
+// RETURN IDENTITY MATRIX FROM SPECIFIED DIMENSIONS
+// RETURNS NULL IF DIMENSIONS ARE IMPROPER
+//
+// Matrix* identity = CreateIdentityMatrix2((int) dimensions);
+//
+Matrix* CreateIdentityMatrix2(int dimensions){
+    Matrix* res;
+    if(!CreateIdentityMatrix(&res, dimensions))
+        return NULL;
+    
+    return res;
+}
+
 // CompareMatrices FUNCTION
 // COMPARES 2 SPECIFIED MATRICES
 // RETURNS 1 IF IDENTICAL, 0 OTHERWISE
@@ -457,6 +501,44 @@ int CompareMatrices(Matrix* a, Matrix* b){
     }
 
     return 1;
+}
+
+// TransposeMatrix FUNCTION
+// CALCULATE TRANSPOSE OF MATRIX AND SAVE TO SPECIFIED POINTER
+//
+// Matrix* m;
+// if(!TransposeMatrix(&m, (Matrix *) a))
+//   ErrorHandler();
+// 
+int TransposeMatrix(Matrix** res, Matrix* a){
+    if(a->matrixRows <= 0 || a->matrixColumns <= 0){
+        fprintf(stderr, "Improper matrix dimensions.\n");
+        return 0;
+    }
+
+    Matrix* buffer = CreateMatrix2(a->matrixColumns, a->matrixRows);
+    for(int i = 0; i < a->matrixRows; i++){
+        for(int j = 0; j < a->matrixColumns; j++){
+            buffer->matrixArray[j][i] = a->matrixArray[i][j];
+        }
+    }
+    *res = buffer;
+
+    return 1;
+}
+
+// TransposeMatrix2 FUNCTION
+// RETURN TRANSPOSE OF MATRIX
+// RETURNS NULL IF EITHER DIMENSION <= 0
+//
+// Matrix* m = TransposeMatrix2((Matrix *) a);
+//
+Matrix* TransposeMatrix2(Matrix* a){
+    Matrix* res;
+    if(!TransposeMatrix(&res, a))
+        return NULL;
+
+    return res;
 }
 
 // MatrixToString FUNCTION
@@ -508,6 +590,26 @@ int ArrayToMatrix(Matrix** res, double** array, int arrayRows, int arrayColumns)
     return 1;
 }
 
+// DuplicateMatrix FUNCTION
+// RETURNS POINTER TO DUPLICATE OF GIVEN MATRIX
+// NULL IF ERROR
+//
+// Matrix* duplicate = DuplicateMatrix((Matrix *) m);
+//
+Matrix* DuplicateMatrix(Matrix* m){
+    Matrix* res;
+    if(!CreateMatrix(&res, m->matrixRows, m->matrixColumns))
+        return NULL;
+    
+    for(int i = 0; i < m->matrixRows; i++){
+        for(int j = 0; j < m->matrixColumns; j++){
+            res->matrixArray[i][j] = m->matrixArray[i][j];
+        }
+    }
+
+    return res;
+}
+
 // SumMatrices FUNCTION
 // CALCULATES SUM OF 2 MATRICES TO A SPECIFIED POINTER
 //
@@ -521,7 +623,10 @@ int SumMatrices(Matrix** res, Matrix* a, Matrix* b){
         return 0;
     }
 
-    Matrix* buffer = CreateMatrix2(a->matrixRows, a->matrixColumns);
+    Matrix* buffer;
+    if(!CreateMatrix(&buffer, a->matrixRows, a->matrixColumns))
+        return 0;
+    
     for(int i = 0; i < a->matrixRows; i++){
         for(int j = 0; j < a->matrixColumns; j++){
             buffer->matrixArray[i][j] = a->matrixArray[i][j] + b->matrixArray[i][j];
@@ -558,7 +663,10 @@ int MultiplyMatrices(Matrix** res, Matrix* a, Matrix* b){
         return 0;
     }
 
-    Matrix* buffer = CreateMatrix2(a->matrixRows, b->matrixColumns);
+    Matrix* buffer;
+    if(!CreateMatrix(&buffer, a->matrixRows, b->matrixColumns))
+        return 0;
+    
     for (int i = 0; i < a->matrixRows; i++) {
         for (int j = 0; j < b->matrixColumns; j++) {
             buffer->matrixArray[i][j] = 0;
@@ -619,6 +727,246 @@ Matrix* MatrixScalarMultiplication2(Matrix* a, const double scalar){
     if(!MatrixScalarMultiplication(&res, a, scalar))
         return NULL;
 
+    return res;
+}
+
+// SwapMatrixRows FUNCTION
+// SWAPS SPECIFIED ROWS IN GIVEN MATRIX
+//
+// if(!SwapMatrixRows((Matrix *) m, (int) row1, (int) row2))
+//   ErrorHandler();
+//
+int SwapMatrixRows(Matrix* a, int row1, int row2){
+    if(a->matrixColumns <= 0 || a->matrixRows <= 0 || a->matrixRows <= MAX(row1, row2)){
+        fprintf(stderr, "Improper matrix dimensions.\n");
+        return 0;
+    }
+
+    for(int i = 0; i < a->matrixColumns; i++){
+        int buffer = a->matrixArray[row1][i];
+        a->matrixArray[row1][i] = a->matrixArray[row2][i];
+        a->matrixArray[row2][i] = buffer;
+    }
+
+    return 1;
+}
+
+// MultiplyRow MATRIX
+// MULTIPLY ROW OF MATRIX BY SCALAR VALUE
+//
+// if(!MultiplyRow((Matrix *) a, (int) row, (int) scalar))
+//   ErrorHandler();
+//
+int MultiplyRow(Matrix* a, int row, double scalar){
+    if(isnan(scalar)){
+        fprintf(stderr, "Improper scalar value.\n");
+        return 0;
+    }
+    if(a->matrixColumns <= 0 || a->matrixRows <= MAX(row, 0) || row < 0){
+        fprintf(stderr, "Improper matrix dimensions.\n");
+        return 0;
+    }
+
+    for(int i = 0; i < a->matrixColumns; i++)
+        a->matrixArray[row][i] *= scalar;
+
+    return 1;
+}
+
+// AddRow FUNCTION
+// ADD THE CONTENTS OF ONE MATRIX ROW ONTO ANOTHER
+// (Effectively: matrix[row1] += matrix[row2])
+//
+// if(!AddRow((Matrix *) a, (int) rowBase, (int) rowSecondary))
+//   ErrorHandler();
+//
+int AddRow(Matrix* a, int rowBase, int rowSecondary){
+    if(a->matrixColumns <= 0 || a->matrixRows <= 0 || a->matrixRows <= rowBase || a->matrixRows <= rowSecondary || rowBase < 0 || rowSecondary < 0){
+        fprintf(stderr, "Improper matrix dimensions.\n");
+        return 0;
+    }
+
+    for(int i = 0; i < a->matrixColumns; i++)
+        a->matrixArray[rowBase][i] += a->matrixArray[rowSecondary][i];
+
+    return 1;
+}
+
+// DeterminantRecursive FUNCTION 
+// RECURSIVELY CALCULATES DETERMINANT OF GIVEN MATRIX 
+// RETURNS DOUBLE AND PRINTS ERROR IF IMPROPER DIMENSIONS
+//
+// double determinant = DeterminantRecursive((Matrix *) m);
+// 
+double DeterminantRecursive(Matrix* m){
+    if(m->matrixRows != m->matrixColumns || m->matrixColumns <= 0){
+        fprintf(stderr, "Improper matrix dimensions.\n");
+        return 0.0;
+    }
+    if(m->matrixColumns == 1){
+        return m->matrixArray[0][0];
+    }
+    if(m->matrixColumns == 2){
+        return m->matrixArray[0][0]*m->matrixArray[1][1] - m->matrixArray[1][0]*m->matrixArray[0][1];
+    }
+
+    double base = 0;
+    for(int i = 0; i < m->matrixColumns; i++){
+        if(m->matrixArray[0][i] == 0)
+            continue;
+        
+        Matrix* subM = CreateMatrix2(m->matrixRows-1, m->matrixRows-1);
+        int x = 0; int y = 0;
+        for(int j = 1; j < m->matrixRows; j++){
+            for(int k = 0; k < m->matrixColumns; k++){
+                if(k == i)
+                    continue;
+                
+                subM->matrixArray[y][x] = m->matrixArray[j][k];
+                x++;
+            }
+            y++; x = 0;
+        }
+
+        base += pow(-1,i) * m->matrixArray[0][i] * DeterminantRecursive(subM);
+    }
+
+    return base;
+}
+
+// FindNonZeroInColumn() FUNCTION
+// FINDS FIRST NON ZERO ENTRY IN SPECIFIED MATRIX COLUMN (TOP TO BOTTOM)
+// STARTS SEARCH AT SPECIFIED STARTING ROW
+// RETURNS -1 IF ERROR OR ALL ENTRIES ARE 0
+//
+static int FindNonZeroInColumn(Matrix* m, int column, int startingRow){
+    if(m->matrixColumns <= 0 || m->matrixRows <= 0 || column < 0 || column >= m->matrixColumns || startingRow < 0 ||startingRow >= m->matrixRows){
+        fprintf(stderr, "Improper matrix dimensions.\n");
+        return -1;
+    }
+
+    for(int i = startingRow; i < m->matrixRows; i++){
+        if(m->matrixArray[i][column] != 0)
+            return i;
+    }
+
+    return -1;
+}
+
+// InvertSquareMarix FUNCTION
+// INVERTS SQUARE MATRIX AND ASSIGNS RESULT TO SPECIFIED POINTER
+// 
+// Matrix* inverse;
+// if(!InvertSquareMatrix(&inv, (Matrix *) m))
+//   ErrorHandler();
+//
+int InvertSquareMatrix(Matrix** res, Matrix* m){
+    if(m->matrixColumns <= 0 || m->matrixRows <= 0 || m->matrixColumns != m->matrixRows){
+        fprintf(stderr, "Improper matrix dimensions.\n");
+        return 0;
+    }
+
+    Matrix* identity = CreateIdentityMatrix2(m->matrixRows);
+    Matrix* original = DuplicateMatrix(m);
+    if(original == NULL){
+        fprintf(stderr, "Error during duplication.\n");
+        return 0;
+    }    
+
+    for(int i = 0; i < m->matrixColumns; i++){
+        // Ensure diagonal entry is non zero
+        if(original->matrixArray[i][i] == 0){
+            int RowToSwap = FindNonZeroInColumn(original, i, i);
+            if(RowToSwap == -1){
+                fprintf(stderr, "Matrix is noninvertible.\n");
+                return 0;
+            }
+
+            SwapMatrixRows(original, i, RowToSwap);
+            SwapMatrixRows(identity, i, RowToSwap);
+        }
+
+        // Reduce all other values at given row
+        for(int y = 0; y < m->matrixRows; y++){
+            if(y == i || original->matrixArray[y][i] == 0)
+                continue;
+            
+            double scalarMultiple = -1.0*original->matrixArray[y][i]/original->matrixArray[i][i];
+            MultiplyRow(original, i, scalarMultiple);
+            MultiplyRow(identity, i, scalarMultiple);
+            AddRow(original, y, i);
+            AddRow(identity, y, i);
+        }
+    }
+
+    // Reduce diagonal entries to 1
+    for(int i = 0; i < m->matrixRows; i++){
+        double scalarMultiple = 1.0/original->matrixArray[i][i];
+        MultiplyRow(original, i, scalarMultiple);
+        MultiplyRow(identity, i, scalarMultiple);
+    }
+
+    *res = identity;
+    FreeMatrix(original);
+
+    return 1;
+}
+
+// InvertSquareMatrix2 FUNCTION
+// RETURNS INVERTED MATRIX FROM SPECIFIED MATRIX
+// RETURNS NULL IF ERROR
+// 
+// Matrix* inverse = InvertSquareMatrix2((Matrix *) m);
+//
+Matrix* InvertSquareMatrix2(Matrix* m){
+    Matrix* res;
+    if(!InvertSquareMatrix(&res, m))
+        return NULL;
+
+    return res;
+}
+
+// MultiplyMatrixVector() FUNCTION
+// CALCULATE MATRIX*VECTOR MULTIPLICATION TO SPECIFIED VECTOR POINTER
+//
+// Vector* product;
+// if(!MultiplyMatrixVector(&product, (Matrix *) m, (Vector *) v))
+//   ErrorHandler();
+//
+int MultiplyMatrixVector(Vector** res, Matrix* m, Vector* v){
+    if(m->matrixColumns <= 0 || m->matrixRows <= 0 || m->matrixColumns != v->vectorDimension){
+        fprintf(stderr, "Improper matrix/vector dimensions.\n");
+        return 0;
+    }
+
+    Vector* buffer;
+    if(!CreateVector(&buffer, m->matrixRows))
+        return 0;
+    
+    for(int i = 0; i < m->matrixRows; i++){
+        double resultAtIndex = 0.0;
+        for(int j = 0; j < m->matrixColumns; j++){
+            resultAtIndex += m->matrixArray[i][j] * v->vectorArray[j];
+        }
+
+        buffer->vectorArray[i] = resultAtIndex;
+    }
+    *res = buffer;
+
+    return 1;
+}
+
+// MultiplyMatrixVector2() FUNCTION
+// RETURN VECTOR POINTER FOR MATRIX*VECTOR PRODUCT
+// RETURNS NULL IF ERROR OR MISALIGNED DIMENSIONS
+//
+// Vector* product = MultiplyMatrixVector2((Matrix *) m, (Vector *) v);
+//
+Vector* MultiplyMatrixVector2(Matrix* m, Vector* v){
+    Vector* res;
+    if(!MultiplyMatrixVector(&res, m, v))
+        return NULL;
+    
     return res;
 }
 
