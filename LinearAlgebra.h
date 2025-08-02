@@ -17,6 +17,10 @@ typedef struct {
     int matrixColumns;
 } Matrix;
 
+enum VectorType {
+    ROW = 0, COLUMN = 1
+};
+
 // CreateVector FUNCTION
 // DEFINE VECTOR ARRAY WITH POSITIVE DIMENSION AT SPECIFIED POINTER
 //
@@ -190,6 +194,25 @@ int UnitVector(Vector* original);
 // Vector* unitVector = unitVector2((Vector *) v);
 //
 Vector* UnitVector2(Vector* original);
+
+// ProjectVector FUNCTION
+// CALCULATES PROJECTION OF VECTOR ONTO BASE VECTOR OF 
+// SAME DIMENSION
+//
+// Vector* projab = NULL;
+// if(!ProjectVector(&projab, (Vector *) a, (Vector *) b))
+//   ErrorHandler();
+//
+int ProjectVector(Vector** res, Vector* base, Vector* v);
+
+// ProjectVector2 FUNCTION
+// RETURNS VECTOR POINTER OF PROJECTION FROM ONE VECTOR
+// TO SPECIFIED BASE VECTOR
+// RETURNS NULL IF ERROR
+//
+// Vector* projab = ProjectVector2((Vector *) a, (Vector *) b);
+//
+Vector* ProjectVector2(Vector* base, Vector* v);
 
 
 //
@@ -420,5 +443,45 @@ Vector* MultiplyMatrixVector2(Matrix* m, Vector* v);
 //   ErrorHandler();
 //
 int MoorePenroseInverse(Matrix** res, Matrix* m);
+
+// SubstituteVectorInMatrix FUNCTION
+// SUBSTITUTES ROW OR COLUMN IN MATRIX WITH THE SPECIFIED
+// VECTOR AT GIVEN INDEX
+//
+// int MatrixSubstitutionIndex = 2;
+// int vType = ROW;  (ROW = 0, COLUMN = 1)
+// if(!SubstituteVectorInMatrix((Matrix *) m, (Vector *) v, MatrixSubstitutionIndex, vType))
+//   ErrorHandler();
+//
+int SubstituteVectorInMatrix(Matrix* m, Vector* v, int it, int vectorType);
+
+// MatrixToVectorArray FUNCTION
+// DECOMPOSES MATRIX TO ARRAY OF SPECIFIED VECTOR TYPE
+// (ROW = 0, COLUMN = 1)
+//
+// Vector** vectorArray;
+// if(!MatrixToVectorArray(&vectorArray, (Matrix *) m, ROW))
+//   ErrorHandler();
+//
+int MatrixToVectorArray(Vector*** array, Matrix* m, int vectorType);
+
+// VectorArrayToMatrix FUNCTION
+// RETURNS MATRIX FROM VECTOR ARRAY OF SPECIFIED VECTOR TYPE
+// (ROW = 0, COLUMN = 1)
+//
+// Matrix* m;
+// if(!VectorArrayToMatrix(&m, (Vector **) vectorArray, COLUMN))
+//   ErrorHandler();
+// 
+int VectorArrayToMatrix(Matrix** res, Vector** vectorArray, int arrayLength, int vectorType);
+
+// QRDecomposition FUNCTION
+// CALCULATES QR DECOMPOSITION OF SPECIFIED MATRIX
+//
+// Matrix *Q, *R;
+// if(!QRDecomposition(&Q, &R, (Matrix *) m))
+//   ErrorHandler();
+//
+int QRDecomposition(Matrix** Q, Matrix** R, Matrix* m);
 
 #endif // LINEAR_ALGEBRA_H

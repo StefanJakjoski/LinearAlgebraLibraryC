@@ -1,13 +1,13 @@
-#include "LinearAlgebra.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 
+#include "LinearAlgebra.h"
+
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
-#define ZERO_APPROX 1e-15
+#define ZERO_APPROX 1e-13
 
 // CreateVector FUNCTION
 // DEFINE VECTOR ARRAY WITH POSITIVE DIMENSION AT SPECIFIED POINTER
@@ -23,6 +23,11 @@ int CreateVector(Vector** res, int vectorSize){
     }
 
     Vector* buffer = (Vector *) malloc(sizeof(Vector));
+    if(buffer == NULL){
+        fprintf(stderr, "Memory allocation failed.\n");
+        return 0;
+    }
+
     buffer->vectorDimension = vectorSize;
     buffer->vectorArray = (double *) calloc(vectorSize, sizeof(double));
     *res = buffer;
@@ -270,6 +275,39 @@ Vector* MultiplyVector2(Vector* a, const double coefficient){
     return v;
 }
 
+// ProjectVector FUNCTION
+// CALCULATES PROJECTION OF VECTOR ONTO BASE VECTOR OF 
+// SAME DIMENSION
+//
+// Vector* projab = NULL;
+// if(!ProjectVector(&projab, (Vector *) a, (Vector *) b))
+//   ErrorHandler();
+//
+int ProjectVector(Vector** res, Vector* base, Vector* v){
+    if(base->vectorDimension != v->vectorDimension || base->vectorDimension <= 0){
+        fprintf(stderr, "ProjectVector: Improper vector dimension.\n");
+        return 0;
+    }
+
+    double bv = DotProduct2(base, v);
+    double bb = DotProduct2(base, base);
+    Vector* sb = MultiplyVector2(base, bv/bb);
+    if(sb == NULL)
+        return 0;
+    
+    *res = sb;
+    
+    return 1;
+}
+
+Vector* projectVector2(Vector* base, Vector* v){
+    Vector* res = NULL;
+    if(!ProjectVector(&res, base, v))
+        return NULL;
+    
+    return res;
+}
+
 // CrossProduct FUNCTION
 // CALCULATE CROSS PRODUCT OF 2 VECTORS AND SAVE TO POINTER
 //
@@ -411,9 +449,18 @@ int CreateMatrix(Matrix** res, int rows, int columns){
     }
 
     Matrix* buffer = (Matrix *) malloc(sizeof(Matrix));
+    if(buffer == NULL){
+        fprintf(stderr, "Memory allocation failed.\n");
+        return 0;
+    }
     buffer->matrixRows = rows; buffer->matrixColumns = columns;
 
     double** array = (double **) malloc(rows*sizeof(double *));
+    if(array == NULL){
+        fprintf(stderr, "Memory allocation failed.\n");
+        return 0;
+    }
+    
     for(int i = 0; i < rows; i++){
         array[i] = (double *) calloc(columns, sizeof(double));
     }
@@ -1042,4 +1089,222 @@ int MoorePenroseInverse(Matrix** res, Matrix* m){
     FreeMatrix(mT); FreeMatrix(mTm); FreeMatrix(mTmInv);
 
     return 1;    
+}
+
+// SubstituteVectorInMatrix FUNCTION
+// SUBSTITUTES ROW OR COLUMN IN MATRIX WITH THE SPECIFIED
+// VECTOR AT GIVEN INDEX
+//
+// int MatrixSubstitutionIndex = 2;
+// int vType = ROW;  (ROW = 0, COLUMN = 1)
+// if(!SubstituteVectorInMatrix((Matrix *) m, (Vector *) v, MatrixSubstitutionIndex, vType))
+//   ErrorHandler();
+//
+int SubstituteVectorInMatrix(Matrix* m, Vector* v, int it, int vectorType){
+    if(m->matrixColumns <= 0 || m->matrixRows <= 0 || v->vectorDimension <= 0){
+        fprintf(stderr, "SubstituteVectorInMatrix: Improper matrix/vector dimensions.\n");
+        return 0;
+    }
+
+    // Vector to matrix row
+    if(vectorType == ROW){
+        if(m->matrixRows <= it || m->matrixColumns != v->vectorDimension){
+            fprintf(stderr, "SubstituteVectorInMatrix: Misaligned dimensions.\n");
+            return 0;
+        }
+
+        for(int i = 0; i < m->matrixColumns; i++){
+            m->matrixArray[it][i] = v->vectorArray[i];
+        }
+
+        return 1;
+    }
+
+    // Vector to matrix column
+    if(m->matrixColumns <= it || m->matrixRows != v->vectorDimension){
+        fprintf(stderr, "SubstituteVectorInMatrix: Misaligned dimensions.\n");
+        return 0;
+    }
+
+    for(int i = 0; i < m->matrixRows; i++){
+        m->matrixArray[i][it] = v->vectorArray[i];
+    }
+
+    return 1;
+}
+
+int MatrixToVectorArray(Vector*** res, Matrix* m, int vectorType){
+    if(m->matrixColumns <= 0 || m->matrixRows <= 0){
+        fprintf(stderr, "MatrixToVectorArray: Improper matrix dimensions.\n");
+        return 0;
+    }
+
+    // if matrix to row vectors
+    if(vectorType == ROW){
+        Vector** array = (Vector **) malloc(m->matrixRows*sizeof(Vector *));
+        for(int i = 0; i < m->matrixRows; i++){
+            if(!CreateVector(&array[i], m->matrixColumns))
+                return 0;
+
+            for(int j = 0; j < m->matrixColumns; j++){
+                array[i]->vectorArray[j] = m->matrixArray[i][j];
+            }
+        }
+        *res = array;
+
+        return 1;
+    }
+
+    // if matrix to column vectors
+    Vector** array = (Vector **) malloc(m->matrixColumns*sizeof(Vector *));
+    for(int i = 0; i < m->matrixColumns; i++){
+        if(!CreateVector(&array[i], m->matrixRows))
+            return 0;
+
+        for(int j = 0; j < m->matrixRows; j++){
+            array[i]->vectorArray[j] = m->matrixArray[j][i];
+        }
+    }
+    *res = array;
+
+    return 1;
+}
+
+// VectorArrayToMatrix FUNCTION
+// RETURNS MATRIX FROM VECTOR ARRAY OF SPECIFIED VECTOR TYPE
+// (ROW = 0, COLUMN = 1)
+//
+// Matrix* m;
+// if(!VectorArrayToMatrix(&m, (Vector **) vectorArray, COLUMN))
+//   ErrorHandler();
+// 
+int VectorArrayToMatrix(Matrix** res, Vector** vectorArr, int arrayLength, int vectorType){
+    int vectorDims = vectorArr[0]->vectorDimension;
+    if(arrayLength <= 0 || vectorDims <= 0){
+        fprintf(stderr, "VectorArrayToMatrix: Improper array length.\n");
+        return 0;
+    }
+
+    // if row vectors to matrix
+    if(vectorType == ROW){
+        Matrix* buffer = NULL;
+        if(!CreateMatrix(&buffer, arrayLength, vectorDims))
+            return 0;
+        
+        for(int i = 0; i < arrayLength; i++){
+            if(vectorArr[i]->vectorDimension != vectorDims){
+                fprintf(stderr, "VectorArrayToMatrix: Matrix dimensions differ.\n");
+                FreeMatrix(buffer);
+                return 0;
+            }
+
+            for(int j = 0; j < vectorDims; j++){
+                buffer->matrixArray[i][j] = vectorArr[i]->vectorArray[j];
+            }
+        }
+        *res = buffer;
+
+        return 1;
+    }
+
+    // if column vectors to matrix
+    Matrix* buffer = NULL;
+    if(!CreateMatrix(&buffer, vectorDims, arrayLength))
+        return 0;
+    
+    for(int i = 0; i < arrayLength; i++){
+        if(vectorArr[i]->vectorDimension != vectorDims){
+            fprintf(stderr, "VectorArrayToMatrix: Matrix dimensions differ.\n");
+            FreeMatrix(buffer);
+            return 0;
+        }
+
+        for(int j = 0; j < vectorDims; j++){
+            buffer->matrixArray[j][i] = vectorArr[i]->vectorArray[j];
+        }
+    }
+    *res = buffer;
+
+    return 1;
+}
+
+// QRDecomposition FUNCTION
+// CALCULATES QR DECOMPOSITION OF SPECIFIED MATRIX
+//
+// Matrix *Q, *R;
+// if(!QRDecomposition(&Q, &R, (Matrix *) m))
+//   ErrorHandler();
+//
+int QRDecomposition(Matrix** Q, Matrix** R, Matrix* m){
+    if(m->matrixRows <= 0 || m->matrixColumns <= 0){
+        fprintf(stderr, "QRDecomposition: Improper matrix dimensions.\n");
+        return 0;
+    }
+
+    int cols = m->matrixColumns;
+
+    Vector** aVectors = NULL;
+    if(!MatrixToVectorArray(&aVectors, m, COLUMN))
+        return 0;
+    
+    // determining u vectors
+    Vector** uVectors = (Vector **) malloc(cols*sizeof(Vector *));    
+    Vector** eVectors = (Vector **) malloc(cols*sizeof(Vector *));
+    for(int i = 0; i < cols; i++){
+        Vector* u = NULL;                           
+        if(!DuplicateVector(&u, aVectors[i]))       // ui = ai
+            return 0;
+
+        // subtract projections
+        Vector *offset = NULL;
+        if(!CreateVector(&offset, u->vectorDimension))
+            return 0;
+        
+        for(int j = 0; j < i; j++){
+            Vector* projUjAi = NULL;
+            if(!ProjectVector(&projUjAi, uVectors[j], aVectors[i]))     // calculate projection
+                return 0;
+            
+            if(!SumVectors(offset, projUjAi))                           // add to offset
+                return 0;
+
+            FreeVector(projUjAi);
+        }
+
+        if(!SubtractVectors(u, offset))             // apply offset (ui - sum[proj(uj, ai)])
+            return 0;
+        
+        FreeVector(offset);
+
+        uVectors[i] = u;
+        double uLength = VectorLength(u);
+        eVectors[i] = MultiplyVector2(u, 1.0/uLength);
+    }
+
+    Matrix* QBuffer = NULL;
+    if(!VectorArrayToMatrix(&QBuffer, eVectors, cols, COLUMN))      // finalize Q matrix
+        return 0;
+    
+    *Q = QBuffer;
+    //MatrixToString(QBuffer);
+
+    Matrix* RBuffer = NULL;
+    if(!CreateMatrix(&RBuffer, cols, cols))
+        return 0;
+
+    for(int i = 0; i < cols; i++){
+        for(int j = i; j < cols; j++){
+            RBuffer->matrixArray[i][j] = DotProduct2(eVectors[i], aVectors[j]);
+        }
+    }
+    *R = RBuffer;
+    //MatrixToString(RBuffer);
+
+    
+    for(int i = 0; i < cols; i++){
+        FreeVector(eVectors[i]); FreeVector(aVectors[i]); FreeVector(uVectors[i]);
+    }
+    free(eVectors); free(aVectors); free(uVectors);
+
+    return 1;
 }

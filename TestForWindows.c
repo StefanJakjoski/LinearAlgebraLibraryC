@@ -186,6 +186,24 @@ bool DotProductTest(){
     return dot == 39.5;
 }
 
+bool ProjectVectorTest(){
+    Vector *a = NULL; Vector *b = NULL;
+    if(!CreateVector(&a, 2) || !CreateVector(&b, 2))
+        return false;
+    
+    a->vectorArray[0] = 1.0; a->vectorArray[1] = 1.0;
+    b->vectorArray[0] = 2.0; b->vectorArray[1] = 0.0;
+
+    Vector* projba = NULL;
+    if(!ProjectVector(&projba, b, a))
+        return 0;
+    
+    bool check = projba->vectorArray[0] && !projba->vectorArray[1];
+    FreeVector(a); FreeVector(b); FreeVector(projba);
+
+    return check;
+}
+
 bool CreateMatrixTest(){
     Matrix* m = NULL;
     CreateMatrix(&m, 2, 2);
@@ -199,8 +217,8 @@ bool CreateMatrixTest(){
     
     bool basicCheck = !m->matrixArray[0][0] && !m->matrixArray[0][1] && !m->matrixArray[1][0] && !m->matrixArray[1][1];
     bool identityCheck = i->matrixArray[0][0] && !i->matrixArray[0][1] && !i->matrixArray[1][0] && i->matrixArray[1][1];
+    FreeMatrix(m); FreeMatrix(i);
 
-    FreeMatrix(m);
     return basicCheck && identityCheck;
 }
 
@@ -277,6 +295,8 @@ bool DuplicateMatrixTest(){
         return false;
 
     bool check = CompareMatrices(c, cD);
+    FreeMatrix(c); FreeMatrix(cD);
+
     return check;
 }
 
@@ -383,7 +403,10 @@ bool RowManipulationTest(){
     AddRow(b, 1, 0);
     MultiplyRow(b, 0, 2);
 
-    return CompareMatrices(c, b);
+    bool check = CompareMatrices(c, b);
+    FreeMatrix(b); FreeMatrix(c);
+
+    return check;
 }
 
 bool DeterminantRecursiveTest(){
@@ -425,18 +448,18 @@ bool InvertSquareMatrixTest(){
 
 bool MultiplyMatrixVectorTest(){
     Matrix* c = CreateMatrix2(2, 2);
-    c->matrixArray[0][0] = 4.5; c->matrixArray[0][1] = 0;
+    c->matrixArray[0][0] = 4.5; c->matrixArray[0][1] = 0.0;
     c->matrixArray[1][0] = -3.0; c->matrixArray[1][1] = 323.4;
 
     Vector* v = CreateVector2(2);
-    v->vectorArray[0] = 2; 
-    v->vectorArray[1] = 0;
+    v->vectorArray[0] = 2.0; 
+    v->vectorArray[1] = 0.0;
 
     Vector* cv = CreateVector2(2);
     cv->vectorArray[0] = 9.0; cv->vectorArray[1] = -6.0;
 
     bool check = CompareVectors(cv, MultiplyMatrixVector2(c, v));
-    FreeMatrix(c);
+    FreeMatrix(c); FreeVector(v); FreeVector(cv);
 
     return check;
 }
@@ -456,6 +479,25 @@ bool MPInverseTest(){
     FreeMatrix(c); FreeMatrix(mp); FreeMatrix(inv);
 
     return check;
+}
+
+bool QRDecompositionTest(){
+    Matrix* c = CreateMatrix2(3,3);
+    c->matrixArray[0][0] = 12.0; c->matrixArray[0][1] = -51.0; c->matrixArray[0][2] = 4.0;
+    c->matrixArray[1][0] = 6.0; c->matrixArray[1][1] = 167.0; c->matrixArray[1][2] = -68.0;
+    c->matrixArray[2][0] = -4.0; c->matrixArray[2][1] = 24.0; c->matrixArray[2][2] = -41.0;
+
+    Matrix *Q = NULL; Matrix* R = NULL;
+    QRDecomposition(&Q, &R, c);
+
+    Matrix* A = NULL;
+    if(!MultiplyMatrices(&A, Q, R))
+        return false;
+
+    bool check = CompareMatrices(A, c);
+    FreeMatrix(c); FreeMatrix(Q); FreeMatrix(R); FreeMatrix(A);
+
+    return check;   
 }
 
 
@@ -484,6 +526,7 @@ int main(){
     printf("VectorLength() "); Eval(VectorLengthTest());
     printf("UnitVector() "); Eval(UnitVectorTest());
     printf("DotProduct() "); Eval(DotProductTest());
+    printf("ProjectVector() "); Eval(ProjectVectorTest());
     
     printf("\nTesting Matrices...\n");
     printf("CreateMatrix() "); Eval(CreateMatrixTest());
@@ -500,4 +543,5 @@ int main(){
     printf("InvertSquareMatrix() "); Eval(InvertSquareMatrixTest());
     printf("MultiplyMatrixVector() "); Eval(MultiplyMatrixVectorTest());
     printf("MoorePenroseInverse() "); Eval(MPInverseTest());
+    printf("QRDecomposition() "); Eval(QRDecompositionTest());
 }
