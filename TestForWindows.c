@@ -229,10 +229,6 @@ bool CompareMatricesTest(){
     if(!CreateMatrix(&a, 2, 1) || !CreateMatrix(&b, 2, 1) || !CreateMatrix(&c, 2, 1))
         return false;
 
-    //a->matrixArray[0][0] = 1.0; a->matrixArray[1][0] = 2.0;
-    //b->matrixArray[0][0] = 1.0; b->matrixArray[1][0] = 2.0;
-    //c->matrixArray[0][0] = 1.0; c->matrixArray[1][0] = 23.4;
-
     mSet(a, 0, 0, 1.0); mSet(a, 0, 0, 2.0);
     mSet(b, 0, 0, 1.0); mSet(b, 0, 0, 2.0);
     mSet(c, 0, 0, 1.0); mSet(c, 0, 0, 23.4);
@@ -248,15 +244,6 @@ bool TransposeMatrixTest(){
     Matrix* a = NULL; Matrix* b = NULL;
     if(!CreateMatrix(&a, 2, 3) || !CreateMatrix(&b, 3, 2))
         return false;
-    
-    /*
-    a->matrixArray[0][0] = 1; a->matrixArray[0][1] = 2; a->matrixArray[0][2] = 3;
-    a->matrixArray[1][0] = 4; a->matrixArray[1][1] = 5; a->matrixArray[1][2] = 6;
-
-    b->matrixArray[0][0] = 1; b->matrixArray[0][1] = 4;
-    b->matrixArray[1][0] = 2; b->matrixArray[1][1] = 5;
-    b->matrixArray[2][0] = 3; b->matrixArray[2][1] = 6;
-    */
 
     mSet(a, 0, 0, 1); mSet(a, 0, 1, 2.0); mSet(a, 0, 2, 3.0);
     mSet(a, 1, 0, 4.0); mSet(a, 1, 1, 5.0); mSet(a, 1, 2, 6.0);
@@ -281,8 +268,6 @@ bool ArrayToMatrixTest(){
     if(!CreateMatrix(&c, 2, 2))
         return false;
     
-    //c->matrixArray[0][0] = 1; c->matrixArray[0][1] = 23.4;
-    //c->matrixArray[1][0] = -321; c->matrixArray[1][1] = 323.4;
     mSet(c, 0, 0, 1.0); mSet(c, 0, 1, 23.4);
     mSet(c, 1, 0, -321.0); mSet(c, 1, 1, 323.4);
 
@@ -306,8 +291,6 @@ bool DuplicateMatrixTest(){
     if(!CreateMatrix(&c, 2, 2))
         return false;
     
-    //c->matrixArray[0][0] = 1; c->matrixArray[0][1] = 23.4;
-    //c->matrixArray[1][0] = -321; c->matrixArray[1][1] = 323.4;
     mSet(c, 0, 0, 1.0); mSet(c, 0, 1, 23.4);
     mSet(c, 1, 0, -321.0); mSet(c, 1, 1, 323.4);
 
@@ -326,9 +309,6 @@ bool SumMatricesTest(){
     if(!CreateMatrix(&a, 2, 1) || !CreateMatrix(&b, 2, 1) || !CreateMatrix(&c, 2, 1))
         return false;
     
-    //a->matrixArray[0][0] = 1.0; a->matrixArray[1][0] = 2.0;
-    //b->matrixArray[0][0] = 1.0; b->matrixArray[1][0] = 2.0;
-    //c->matrixArray[0][0] = 2.0; c->matrixArray[1][0] = 4.0;
     mSet(a, 0, 0, 1.0); mSet(a, 1, 0, 2.0);
     mSet(b, 0, 0, 1.0); mSet(b, 1, 0, 2.0);
     mSet(c, 0, 0, 2.0); mSet(c, 1, 0, 4.0);
@@ -348,17 +328,6 @@ bool MultiplyMatricesTest(){
     if(!CreateMatrix(&a, 2, 3) || !CreateMatrix(&b, 3, 2) || !CreateMatrix(&c, 2, 2))
         return false;
 
-    /*
-    a->matrixArray[0][0] = 1.0; a->matrixArray[0][1] = 2.0; a->matrixArray[0][2] = 3.0;
-    a->matrixArray[1][0] = 4.0; a->matrixArray[1][1] = 5.0; a->matrixArray[1][2] = 6.0;
-
-    b->matrixArray[0][0] = 3.0; b->matrixArray[0][1] = 4.0;
-    b->matrixArray[1][0] = 5.0; b->matrixArray[1][1] = 6.0;
-    b->matrixArray[2][0] = 1.0; b->matrixArray[2][1] = 2.0;
-
-    c->matrixArray[0][0] = 16.0; c->matrixArray[0][1] = 22.0;
-    c->matrixArray[1][0] = 43.0; c->matrixArray[1][1] = 58.0;
-    */
     mSet(a, 0, 0, 1); mSet(a, 0, 1, 2.0); mSet(a, 0, 2, 3.0);
     mSet(a, 1, 0, 4.0); mSet(a, 1, 1, 5.0); mSet(a, 1, 2, 6.0);
 
@@ -382,15 +351,7 @@ bool MatrixScalarMultiplicationTest(){
     Matrix* b = NULL; Matrix* c = NULL;
     if(!CreateMatrix(&b, 3, 2) || !CreateMatrix(&c, 3, 2))
         return false;
-    /*
-    b->matrixArray[0][0] = 3; b->matrixArray[0][1] = 4;
-    b->matrixArray[1][0] = 5; b->matrixArray[1][1] = 6;
-    b->matrixArray[2][0] = 1; b->matrixArray[2][1] = 2;
     
-    c->matrixArray[0][0] = 9; c->matrixArray[0][1] = 12;
-    c->matrixArray[1][0] = 15; c->matrixArray[1][1] = 18;
-    c->matrixArray[2][0] = 3; c->matrixArray[2][1] = 6;
-    */
     mSet(b, 0, 0, 3.0); mSet(b, 0, 1, 4.0);
     mSet(b, 1, 0, 5.0); mSet(b, 1, 1, 6.0);
     mSet(b, 2, 0, 1.0); mSet(b, 2, 1, 2.0);
@@ -414,15 +375,6 @@ bool SwapMatrixRowsTest(){
     if(!CreateMatrix(&b, 3, 2) || !CreateMatrix(&c, 3, 2))
         return false;
 
-    /*
-    b->matrixArray[0][0] = 3; b->matrixArray[0][1] = 4;
-    b->matrixArray[1][0] = 5; b->matrixArray[1][1] = 6;
-    b->matrixArray[2][0] = 1; b->matrixArray[2][1] = 2;
-    
-    c->matrixArray[0][0] = 3; c->matrixArray[0][1] = 4;
-    c->matrixArray[1][0] = 1; c->matrixArray[1][1] = 2;
-    c->matrixArray[2][0] = 5; c->matrixArray[2][1] = 6;
-    */
     mSet(b, 0, 0, 3.0); mSet(b, 0, 1, 4.0);
     mSet(b, 1, 0, 5.0); mSet(b, 1, 1, 6.0);
     mSet(b, 2, 0, 1.0); mSet(b, 2, 1, 2.0);
@@ -447,8 +399,6 @@ bool RowManipulationTest(){
 
     for(int i = 0; i < 2; i++){
         for(int j = 0; j < 2; j++){
-            //b->matrixArray[i][j] = 1;
-            //c->matrixArray[i][j] = 2;
             mSet(b, i, j, 1.0); mSet(c, i, j, 2.0);
         }
     }
@@ -481,8 +431,6 @@ bool InvertSquareMatrixTest(){
     Matrix* c = NULL;
     if(!CreateMatrix(&c, 2, 2))
         return false;
-    //c->matrixArray[0][0] = 4.0; c->matrixArray[0][1] = 0.0;
-    //c->matrixArray[1][0] = -3.0; c->matrixArray[1][1] = 323.4;
 
     mSet(c, 0, 0, 4.0); mSet(c, 0, 1, 0.0);
     mSet(c, 1, 0, -3.0); mSet(c, 1, 1, 323.4);
@@ -504,8 +452,6 @@ bool InvertSquareMatrixTest(){
 
 bool MultiplyMatrixVectorTest(){
     Matrix* c = CreateMatrix2(2, 2);
-    //c->matrixArray[0][0] = 4.5; c->matrixArray[0][1] = 0.0;
-    //c->matrixArray[1][0] = -3.0; c->matrixArray[1][1] = 323.4;
     
     mSet(c, 0, 0, 4.5); mSet(c, 0, 1, 0.0);
     mSet(c, 1, 0, -3.0); mSet(c, 1, 1, 323.4);
@@ -524,8 +470,6 @@ bool MultiplyMatrixVectorTest(){
 
 bool MPInverseTest(){
     Matrix* c = CreateMatrix2(2, 2);
-    //c->matrixArray[0][0] = 4.5; c->matrixArray[0][1] = 0;
-    //c->matrixArray[1][0] = -3.0; c->matrixArray[1][1] = 323.4;
     
     mSet(c, 0, 0, 4.5); mSet(c, 0, 1, 0.0);
     mSet(c, 1, 0, -3.0); mSet(c, 1, 1, 323.4);
@@ -544,9 +488,6 @@ bool MPInverseTest(){
 
 bool QRDecompositionTest(){
     Matrix* c = CreateMatrix2(3,3);
-    //c->matrixArray[0][0] = 12.0; c->matrixArray[0][1] = -51.0; c->matrixArray[0][2] = 4.0;
-    //c->matrixArray[1][0] = 6.0; c->matrixArray[1][1] = 167.0; c->matrixArray[1][2] = -68.0;
-    //c->matrixArray[2][0] = -4.0; c->matrixArray[2][1] = 24.0; c->matrixArray[2][2] = -41.0;
     
     mSet(c, 0, 0, 12.0); mSet(c, 0, 1, -51.0); mSet(c, 0, 2, 4.0);
     mSet(c, 1, 0, 6.0); mSet(c, 1, 1, 167.0); mSet(c, 1, 2, -68.0);
