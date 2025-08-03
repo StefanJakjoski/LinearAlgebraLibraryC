@@ -29,7 +29,14 @@ int CreateVector(Vector** res, int vectorSize){
     }
 
     buffer->vectorDimension = vectorSize;
-    buffer->vectorArray = (double *) calloc(vectorSize, sizeof(double));
+    if(vectorSize > SMALL_OBJECT_AMOUNT)
+        buffer->vectorArray = (double *) calloc(vectorSize, sizeof(double));
+    else{
+        for(int i = 0; i < vectorSize; i++){
+            buffer->smallVectorArray[i] = 0.0;
+        }
+    }
+    
     *res = buffer;
     return 1;
 }
@@ -54,8 +61,38 @@ Vector* CreateVector2(int vectorSize){
 // FreeVector((Vector *) v);
 //
 void FreeVector(Vector* v){
-    free(v->vectorArray);
+    if(v->vectorDimension > SMALL_OBJECT_AMOUNT)
+        free(v->vectorArray);
     free(v);
+}
+
+
+double vGet(Vector* v, int index){
+    if(v->vectorDimension <= index){
+        fprintf(stderr, "Index out of range.\n");
+        return NAN;
+    }
+
+    if(v->vectorDimension <= SMALL_OBJECT_AMOUNT){
+        return v->smallVectorArray[index];
+    }
+
+    return v->vectorArray[index];
+}
+
+int vSet(Vector* v, int index, double val){
+    if(v->vectorDimension <= index){
+        fprintf(stderr, "Index out of range.\n");
+        return 0;
+    }
+
+    if(v->vectorDimension <= SMALL_OBJECT_AMOUNT){
+        v->smallVectorArray[index] = val;
+        return 1;
+    }
+
+    v->vectorArray[index] = val;
+    return 1;
 }
 
 // CompareVectors FUNCTION
@@ -72,7 +109,7 @@ int CompareVectors(Vector* a, Vector* b){
     }
 
     for(int i = 0; i < a->vectorDimension; i++){
-        if(a->vectorArray[i] != b->vectorArray[i]){
+        if(vGet(a, i) != vGet(b, i)){
             return 0;
         }
     }
@@ -95,7 +132,7 @@ int VectorToString(Vector* a){
     printf("{");
     for(int i = 0; i < a->vectorDimension; i++){
         if(i >= 1){ printf(", "); }
-        printf("%f", a->vectorArray[i]);
+        printf("%f", vGet(a, i));
     }
     printf("}\n");
 
@@ -111,15 +148,22 @@ int VectorToString(Vector* a){
 //   errorHandler(); 
 //
 int ArrayToVector(Vector** res, double* array, int arrayDimension){
-    if(!CreateVector(res, arrayDimension)){
-        fprintf(stderr, "Error during new vector creation.\n");
+    if(arrayDimension <= 0){
+        fprintf(stderr, "Improper vector dimension.\n");
         return 0;
     }
 
-    Vector* buffer = *res;
-    memcpy(buffer->vectorArray, array, arrayDimension*sizeof(double));
-    buffer->vectorDimension = arrayDimension;
+    Vector *buffer = NULL;
+    if(!CreateVector(&buffer, arrayDimension))
+        return 0;
 
+    
+    if(buffer->vectorDimension <= SMALL_OBJECT_AMOUNT)
+        memcpy(buffer->smallVectorArray, array, arrayDimension*sizeof(double));
+    else
+        memcpy(buffer->vectorArray, array, arrayDimension*sizeof(double));
+
+    *res = buffer;
     return 1;
 }
 
@@ -137,7 +181,10 @@ int DuplicateVector(Vector** res, Vector* original){
     }
 
     Vector* buffer = CreateVector2(original->vectorDimension);
-    memcpy(buffer->vectorArray, original->vectorArray, original->vectorDimension * sizeof(double));
+    if(original->vectorDimension <= SMALL_OBJECT_AMOUNT)
+        memcpy(buffer->smallVectorArray, original->smallVectorArray, original->vectorDimension * sizeof(double));
+    else
+        memcpy(buffer->vectorArray, original->vectorArray, original->vectorDimension * sizeof(double));
     *res = buffer;
 
     return 1;
@@ -172,7 +219,8 @@ int SumVectors(Vector* a, Vector* b){
     }
 
     for(int i = 0; i < a->vectorDimension; i++){
-        a->vectorArray[i] += b->vectorArray[i];
+        double newRes = vGet(a, i) + vGet(b, i);
+        vSet(a, i, newRes);
     }
 
     return 1;
@@ -211,7 +259,8 @@ int SubtractVectors(Vector* a, Vector* b){
     }
 
     for(int i = 0; i < a->vectorDimension; i++){
-        a->vectorArray[i] -= b->vectorArray[i];
+        double newRes = vGet(a, i) - vGet(b, i);
+        vSet(a, i, newRes);
     }
 
     return 1;
@@ -250,7 +299,8 @@ int MultiplyVector(Vector* a, const double coefficient){
     }
 
     for(int i = 0; i < a->vectorDimension; i++){
-        a->vectorArray[i] *= coefficient;
+        double newRes = vGet(a, i) * coefficient;
+        vSet(a, i, newRes);
     }
 
     return 1;
@@ -328,9 +378,11 @@ int CrossProduct(Vector** newVector, Vector* a, Vector* b){
     }
 
     Vector *buffer = *newVector;
-    buffer->vectorArray[0] = a->vectorArray[1]*b->vectorArray[2] - a->vectorArray[2]*b->vectorArray[1];
-    buffer->vectorArray[1] = a->vectorArray[0]*b->vectorArray[2] - a->vectorArray[2]*b->vectorArray[0];
-    buffer->vectorArray[2] = a->vectorArray[0]*b->vectorArray[1] - a->vectorArray[1]*b->vectorArray[0];
+    double new0 = vGet(a, 1)*vGet(b, 2) - vGet(a, 2)*vGet(b, 1);
+    double new1 = vGet(a, 0)*vGet(b, 2) - vGet(a, 2)*vGet(b, 0);
+    double new2 = vGet(a, 0)*vGet(b, 1) - vGet(a, 1)*vGet(b, 0);
+
+    vSet(buffer, 0, new0); vSet(buffer, 1, new1); vSet(buffer, 2, new2);
 
     return 1;
 }
@@ -350,7 +402,7 @@ int DotProduct(double* res, Vector* a, Vector* b){
 
     double buffer = 0;
     for(int i = 0; i < a->vectorDimension; i++){
-        buffer += a->vectorArray[i]*b->vectorArray[i];
+        buffer += vGet(a, i)*vGet(b, i);
     }
     *res = buffer;
 
@@ -388,7 +440,7 @@ double VectorLength(Vector* v){
 
     double res = 0;
     for(int i = 0; i < v->vectorDimension; i++){
-        res += pow(v->vectorArray[i], 2);
+        res += pow(vGet(v, i), 2);
     }
 
     return sqrt(res);
@@ -455,6 +507,17 @@ int CreateMatrix(Matrix** res, int rows, int columns){
     }
     buffer->matrixRows = rows; buffer->matrixColumns = columns;
 
+    if(buffer->matrixRows <= SMALL_OBJECT_AMOUNT && buffer->matrixColumns <= SMALL_OBJECT_AMOUNT){
+        for(int i = 0; i < buffer->matrixRows; i++){
+            for(int j = 0; j < buffer->matrixColumns; j++){
+                buffer->smallMatrixArray[i][j] = 0;
+            }
+        }
+
+        *res = buffer;
+        return 1;
+    }
+
     double** array = (double **) malloc(rows*sizeof(double *));
     if(array == NULL){
         fprintf(stderr, "Memory allocation failed.\n");
@@ -486,10 +549,40 @@ Matrix* CreateMatrix2(int rows, int columns){
 }
 
 void FreeMatrix(Matrix* m){
-    for(int i = 0; i < m->matrixRows; i++)
-        free(m->matrixArray[i]);
-    free(m->matrixArray);
+    if(m->matrixRows > SMALL_OBJECT_AMOUNT || m->matrixColumns > SMALL_OBJECT_AMOUNT){
+        for(int i = 0; i < m->matrixRows; i++)
+            free(m->matrixArray[i]);
+        free(m->matrixArray);
+    }
     free(m);
+}
+
+double mGet(Matrix* m, int row, int col){
+    if(m->matrixRows <= row || m->matrixColumns <= col){
+        fprintf(stderr, "Index out of range.\n");
+        return NAN;
+    }
+
+    if(m->matrixRows <= SMALL_OBJECT_AMOUNT && m->matrixColumns <= SMALL_OBJECT_AMOUNT){
+        return m->smallMatrixArray[row][col];
+    }
+
+    return m->matrixArray[row][col];
+}
+
+int mSet(Matrix* m, int row, int col, double val){
+    if(m->matrixRows <= row || m->matrixColumns <= col){
+        fprintf(stderr, "Index out of range.\n");
+        return 0;
+    }
+
+    if(m->matrixRows <= SMALL_OBJECT_AMOUNT && m->matrixColumns <= SMALL_OBJECT_AMOUNT){
+        m->smallMatrixArray[row][col] = val;
+        return 1;
+    }
+
+    m->matrixArray[row][col] = val;
+    return 1;
 }
 
 // CreateIdentityMatrix FUNCTION
@@ -508,7 +601,8 @@ int CreateIdentityMatrix(Matrix** res, int dimensions){
     Matrix* buffer;
     CreateMatrix(&buffer, dimensions, dimensions);
     for(int i = 0; i < dimensions; i++){
-        buffer->matrixArray[i][i] = 1;
+        //buffer->matrixArray[i][i] = 1;
+        mSet(buffer, i, i, 1.0);
     }
     *res = buffer;
 
@@ -551,7 +645,8 @@ int CompareMatrices(Matrix* a, Matrix* b){
 
     for(int i = 0; i < a->matrixRows; i++){
         for(int j = 0; j < a->matrixColumns; j++){
-            if(absDouble(a->matrixArray[i][j] - b->matrixArray[i][j]) > ZERO_APPROX){
+            if(absDouble(mGet(a, i, j) - mGet(b, i, j)) > ZERO_APPROX){
+                //printf("%d %d\n", i, j);
                 return 0;
             }
         }
@@ -576,7 +671,8 @@ int TransposeMatrix(Matrix** res, Matrix* a){
     Matrix* buffer = CreateMatrix2(a->matrixColumns, a->matrixRows);
     for(int i = 0; i < a->matrixRows; i++){
         for(int j = 0; j < a->matrixColumns; j++){
-            buffer->matrixArray[j][i] = a->matrixArray[i][j];
+            //buffer->matrixArray[j][i] = a->matrixArray[i][j];
+            mSet(buffer, j, i, mGet(a, i, j));
         }
     }
     *res = buffer;
@@ -618,7 +714,8 @@ int MatrixToString(Matrix* m){
             if(j != 0)
                 printf(", ");
             
-            printf("%*.*G", digitsToDisplay, decimalPlaces, m->matrixArray[i][j]);
+            //printf("%*.*G", digitsToDisplay, decimalPlaces, m->matrixArray[i][j]);
+            printf("%*.*G", digitsToDisplay, decimalPlaces, mGet(m, i, j));
         }
         printf(" |\n");
     }
@@ -641,7 +738,14 @@ int ArrayToMatrix(Matrix** res, double** array, int arrayRows, int arrayColumns)
         return 0;
     }
 
-    memcpy(buffer->matrixArray, array, arrayColumns*arrayRows*sizeof(double));
+    if(buffer->matrixRows <= SMALL_OBJECT_AMOUNT && buffer->matrixColumns <= SMALL_OBJECT_AMOUNT)
+        for(int i = 0; i < arrayRows; i++){
+            for(int j = 0; j < arrayColumns; j++){
+                mSet(buffer, i, j, array[i][j]);
+            }
+        }
+    else
+        memcpy(buffer->matrixArray, array, arrayColumns*arrayRows*sizeof(double));
     *res = buffer;
 
     return 1;
@@ -660,7 +764,8 @@ Matrix* DuplicateMatrix(Matrix* m){
     
     for(int i = 0; i < m->matrixRows; i++){
         for(int j = 0; j < m->matrixColumns; j++){
-            res->matrixArray[i][j] = m->matrixArray[i][j];
+            //res->matrixArray[i][j] = m->matrixArray[i][j];
+            mSet(res, i, j, mGet(m, i, j));
         }
     }
 
@@ -687,7 +792,8 @@ int SumMatrices(Matrix** res, Matrix* a, Matrix* b){
     
     for(int i = 0; i < a->matrixRows; i++){
         for(int j = 0; j < a->matrixColumns; j++){
-            buffer->matrixArray[i][j] = a->matrixArray[i][j] + b->matrixArray[i][j];
+            //buffer->matrixArray[i][j] = a->matrixArray[i][j] + b->matrixArray[i][j];
+            mSet(buffer, i, j, mGet(a, i, j) + mGet(b, i, j));
         }
     }
     *res = buffer;
@@ -727,10 +833,13 @@ int MultiplyMatrices(Matrix** res, Matrix* a, Matrix* b){
     
     for (int i = 0; i < a->matrixRows; i++) {
         for (int j = 0; j < b->matrixColumns; j++) {
-            buffer->matrixArray[i][j] = 0;
+            //buffer->matrixArray[i][j] = 0;
+            double new = 0.0;
             for (int k = 0; k < a->matrixColumns; k++) {
-                buffer->matrixArray[i][j] += a->matrixArray[i][k] * b->matrixArray[k][j];
+                //buffer->matrixArray[i][j] += a->matrixArray[i][k] * b->matrixArray[k][j];
+                new += mGet(a, i, k) * mGet(b, k, j);
             }
+            mSet(buffer, i, j, new);
         }
     }
     *res = buffer;
@@ -767,7 +876,8 @@ int MatrixScalarMultiplication(Matrix** res, Matrix* a, const double scalar){
     Matrix* buffer = CreateMatrix2(a->matrixRows, a->matrixColumns);
     for (int i = 0; i < a->matrixRows; i++){
         for (int j = 0; j < a->matrixColumns; j++){
-            buffer->matrixArray[i][j] = a->matrixArray[i][j]*scalar;
+            //buffer->matrixArray[i][j] = a->matrixArray[i][j]*scalar;
+            mSet(buffer, i, j, mGet(a, i, j)*scalar);
         }
     }
     *res = buffer;
@@ -801,9 +911,13 @@ int SwapMatrixRows(Matrix* a, int row1, int row2){
     }
 
     for(int i = 0; i < a->matrixColumns; i++){
-        int buffer = a->matrixArray[row1][i];
-        a->matrixArray[row1][i] = a->matrixArray[row2][i];
-        a->matrixArray[row2][i] = buffer;
+        //int buffer = a->matrixArray[row1][i];
+        //a->matrixArray[row1][i] = a->matrixArray[row2][i];
+        //a->matrixArray[row2][i] = buffer;
+
+        double buffer = mGet(a, row1, i);
+        mSet(a, row1, i, mGet(a, row2, i));
+        mSet(a, row2, i, buffer);
     }
 
     return 1;
@@ -825,8 +939,10 @@ int MultiplyRow(Matrix* a, int row, double scalar){
         return 0;
     }
 
-    for(int i = 0; i < a->matrixColumns; i++)
-        a->matrixArray[row][i] *= scalar;
+    for(int i = 0; i < a->matrixColumns; i++){
+        //a->matrixArray[row][i] *= scalar;
+        mSet(a, row, i, mGet(a, row, i)*scalar);
+    }
 
     return 1;
 }
@@ -844,8 +960,11 @@ int AddRow(Matrix* a, int rowBase, int rowSecondary){
         return 0;
     }
 
-    for(int i = 0; i < a->matrixColumns; i++)
-        a->matrixArray[rowBase][i] += a->matrixArray[rowSecondary][i];
+    for(int i = 0; i < a->matrixColumns; i++){
+        //a->matrixArray[rowBase][i] += a->matrixArray[rowSecondary][i];
+        double new = mGet(a, rowBase, i) + mGet(a, rowSecondary, i);
+        mSet(a, rowBase, i, new);
+    }
 
     return 1;
 }
@@ -862,15 +981,18 @@ double DeterminantRecursive(Matrix* m){
         return 0.0;
     }
     if(m->matrixColumns == 1){
-        return m->matrixArray[0][0];
+        //return m->matrixArray[0][0];
+        return mGet(m, 0, 0);
     }
     if(m->matrixColumns == 2){
-        return m->matrixArray[0][0]*m->matrixArray[1][1] - m->matrixArray[1][0]*m->matrixArray[0][1];
+        //return m->matrixArray[0][0]*m->matrixArray[1][1] - m->matrixArray[1][0]*m->matrixArray[0][1];
+        return mGet(m, 0, 0)*mGet(m, 1, 1) - mGet(m, 1, 0)*mGet(m, 0, 1);
     }
 
     double base = 0;
     for(int i = 0; i < m->matrixColumns; i++){
-        if(m->matrixArray[0][i] == 0)
+        //if(m->matrixArray[0][i] == 0)
+        if(mGet(m, 0, i) == 0)
             continue;
         
         Matrix* subM = CreateMatrix2(m->matrixRows-1, m->matrixRows-1);
@@ -880,13 +1002,15 @@ double DeterminantRecursive(Matrix* m){
                 if(k == i)
                     continue;
                 
-                subM->matrixArray[y][x] = m->matrixArray[j][k];
+                //subM->matrixArray[y][x] = m->matrixArray[j][k];
+                mSet(subM, y, x, mGet(m, j, k));
                 x++;
             }
             y++; x = 0;
         }
 
-        base += pow(-1,i) * m->matrixArray[0][i] * DeterminantRecursive(subM);
+        //base += pow(-1,i) * m->matrixArray[0][i] * DeterminantRecursive(subM);
+        base += pow(-1,i) * mGet(m, 0, i) * DeterminantRecursive(subM);
     }
 
     return base;
@@ -904,7 +1028,8 @@ int FindNonZeroInColumn(Matrix* m, int column, int startingRow){
     }
 
     for(int i = startingRow; i < m->matrixRows; i++){
-        if(m->matrixArray[i][column] != 0)
+        //if(m->matrixArray[i][column] != 0)
+        if(mGet(m, i, column) != 0)
             return i;
     }
 
@@ -933,7 +1058,8 @@ int InvertSquareMatrix(Matrix** res, Matrix* m){
 
     for(int i = 0; i < m->matrixColumns; i++){
         // Ensure diagonal entry is non zero
-        if(original->matrixArray[i][i] == 0){
+        //if(original->matrixArray[i][i] == 0){
+        if(mGet(original, i, i) == 0){
             int RowToSwap = FindNonZeroInColumn(original, i, i);
             if(RowToSwap == -1){
                 fprintf(stderr, "Matrix is noninvertible.\n");
@@ -946,10 +1072,12 @@ int InvertSquareMatrix(Matrix** res, Matrix* m){
 
         // Reduce all other values at given row
         for(int y = 0; y < m->matrixRows; y++){
-            if(y == i || original->matrixArray[y][i] == 0)
+            //if(y == i || original->matrixArray[y][i] == 0)
+            if(y == i || mGet(original, y, i) == 0)
                 continue;
             
-            double scalarMultiple = -1.0*original->matrixArray[y][i]/original->matrixArray[i][i];
+            //double scalarMultiple = -1.0*original->matrixArray[y][i]/original->matrixArray[i][i];
+            double scalarMultiple = -1.0*mGet(original, y, i)/mGet(original, i, i);
             MultiplyRow(original, i, scalarMultiple);
             MultiplyRow(identity, i, scalarMultiple);
             AddRow(original, y, i);
@@ -959,7 +1087,8 @@ int InvertSquareMatrix(Matrix** res, Matrix* m){
 
     // Reduce diagonal entries to 1
     for(int i = 0; i < m->matrixRows; i++){
-        double scalarMultiple = 1.0/original->matrixArray[i][i];
+        //double scalarMultiple = 1.0/original->matrixArray[i][i];
+        double scalarMultiple = 1.0/mGet(original, i, i);
         MultiplyRow(original, i, scalarMultiple);
         MultiplyRow(identity, i, scalarMultiple);
     }
@@ -1004,10 +1133,12 @@ int MultiplyMatrixVector(Vector** res, Matrix* m, Vector* v){
     for(int i = 0; i < m->matrixRows; i++){
         double resultAtIndex = 0.0;
         for(int j = 0; j < m->matrixColumns; j++){
-            resultAtIndex += m->matrixArray[i][j] * v->vectorArray[j];
+            //resultAtIndex += m->matrixArray[i][j] * vGet(v, j);
+            resultAtIndex += mGet(m, i, j) * vGet(v, j);
         }
 
-        buffer->vectorArray[i] = resultAtIndex;
+        //buffer->vectorArray[i] = resultAtIndex;
+        vSet(buffer, i, resultAtIndex);
     }
     *res = buffer;
 
@@ -1114,7 +1245,9 @@ int SubstituteVectorInMatrix(Matrix* m, Vector* v, int it, int vectorType){
         }
 
         for(int i = 0; i < m->matrixColumns; i++){
-            m->matrixArray[it][i] = v->vectorArray[i];
+            //m->matrixArray[it][i] = v->vectorArray[i];
+            //m->matrixArray[it][i] = vGet(v, i);
+            mSet(m, it, i, vGet(v, i));
         }
 
         return 1;
@@ -1127,7 +1260,9 @@ int SubstituteVectorInMatrix(Matrix* m, Vector* v, int it, int vectorType){
     }
 
     for(int i = 0; i < m->matrixRows; i++){
-        m->matrixArray[i][it] = v->vectorArray[i];
+        //m->matrixArray[i][it] = v->vectorArray[i];
+        //m->matrixArray[i][it] = vGet(v, i);
+        mSet(m, i, it, vGet(v, i));
     }
 
     return 1;
@@ -1147,7 +1282,9 @@ int MatrixToVectorArray(Vector*** res, Matrix* m, int vectorType){
                 return 0;
 
             for(int j = 0; j < m->matrixColumns; j++){
-                array[i]->vectorArray[j] = m->matrixArray[i][j];
+                //array[i]->vectorArray[j] = m->matrixArray[i][j];
+                //vSet(array[i], j, m->matrixArray[i][j]);
+                vSet(array[i], j, mGet(m, i, j));
             }
         }
         *res = array;
@@ -1162,7 +1299,9 @@ int MatrixToVectorArray(Vector*** res, Matrix* m, int vectorType){
             return 0;
 
         for(int j = 0; j < m->matrixRows; j++){
-            array[i]->vectorArray[j] = m->matrixArray[j][i];
+            //array[i]->vectorArray[j] = m->matrixArray[j][i];
+            //vSet(array[i], j, m->matrixArray[j][i]);
+            vSet(array[i], j, mGet(m, j, i));
         }
     }
     *res = array;
@@ -1199,7 +1338,9 @@ int VectorArrayToMatrix(Matrix** res, Vector** vectorArr, int arrayLength, int v
             }
 
             for(int j = 0; j < vectorDims; j++){
-                buffer->matrixArray[i][j] = vectorArr[i]->vectorArray[j];
+                //buffer->matrixArray[i][j] = vectorArr[i]->vectorArray[j];
+                //buffer->matrixArray[i][j] = vGet(vectorArr[i], j);
+                mSet(buffer, i, j, vGet(vectorArr[i], j));
             }
         }
         *res = buffer;
@@ -1220,7 +1361,9 @@ int VectorArrayToMatrix(Matrix** res, Vector** vectorArr, int arrayLength, int v
         }
 
         for(int j = 0; j < vectorDims; j++){
-            buffer->matrixArray[j][i] = vectorArr[i]->vectorArray[j];
+            //buffer->matrixArray[j][i] = vectorArr[i]->vectorArray[j];
+            //buffer->matrixArray[j][i] = vGet(vectorArr[i], j);
+            mSet(buffer, j, i, vGet(vectorArr[i], j));
         }
     }
     *res = buffer;
@@ -1294,7 +1437,8 @@ int QRDecomposition(Matrix** Q, Matrix** R, Matrix* m){
 
     for(int i = 0; i < cols; i++){
         for(int j = i; j < cols; j++){
-            RBuffer->matrixArray[i][j] = DotProduct2(eVectors[i], aVectors[j]);
+            //RBuffer->matrixArray[i][j] = DotProduct2(eVectors[i], aVectors[j]);
+            mSet(RBuffer, i, j, DotProduct2(eVectors[i], aVectors[j]));
         }
     }
     *R = RBuffer;

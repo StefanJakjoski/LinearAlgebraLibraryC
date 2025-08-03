@@ -6,13 +6,17 @@
 #include <string.h>
 #include <math.h>
 
+#define SMALL_OBJECT_AMOUNT 5                           // modified for optimization
+
 typedef struct {
-    double* vectorArray;
+    double smallVectorArray[SMALL_OBJECT_AMOUNT];       // smaller vectors to use stack
+    double* vectorArray;                                // larger vectors to use heap
     int vectorDimension;
 } Vector;
 
 typedef struct {
-    double** matrixArray;
+    double smallMatrixArray[SMALL_OBJECT_AMOUNT][SMALL_OBJECT_AMOUNT];      // smaller matrices to use stack
+    double** matrixArray;                                                   // larger matrices to use heap
     int matrixRows;
     int matrixColumns;
 } Matrix;
@@ -44,6 +48,10 @@ Vector* CreateVector2(int vectorSize);
 // FreeVector((Vector *) v);
 //
 void FreeVector(Vector* v);
+
+double vGet(Vector* v, int index);
+
+int vSet(Vector* v, int index, double val);
 
 // CompareVectors FUNCTION
 // COMPARES DIMENSIONS AND INDIVIDUAL ELEMENTS OF 2 SPECIFIED VECTORS
@@ -243,6 +251,10 @@ Matrix* CreateMatrix2(int rows, int columns);
 // FreeMatrix((Matrix *) m);
 //
 void FreeMatrix(Matrix* m);
+
+double mGet(Matrix* m, int row, int col);
+
+int mSet(Matrix* m, int row, int col, double val);
 
 // CreateIdentityMatrix FUNCTION
 // DEFINE IDENTITY MATRIX AT SPECIFIED POINTER
